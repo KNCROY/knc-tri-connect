@@ -379,7 +379,7 @@
         document.getElementById('pwModalInput').onkeypress = e => { if(e.key==='Enter') submitPw(); };
     }
 
-    // 🟢 완벽하게 수정된 보안 로그인 함수
+  // 🟢 완벽하게 수정된 보안 로그인 함수 (CORS 통행증 포함)
     async function submitPw() {
         const pwd = document.getElementById('pwModalInput').value;
         if(!pwd) return alert("비밀번호를 입력하세요.");
@@ -392,8 +392,10 @@
         nameTitle.innerText = "확인 중...";
 
         try {
+            // ⭐️ 바로 이 부분에 headers 통행증이 안전하게 추가되었습니다!
             const res = await fetch(GAS_URL, {
                 method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'login', data: { user: selectedLoginUser, password: pwd } })
             });
             const result = await res.json();
