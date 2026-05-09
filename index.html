@@ -5,30 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KNC Tri-Connect</title>
     <style>
-        /* 🎨 오리지널 클래식 테마 (얇고 심플한 맑은 고딕 & 다크 네이비 톤) */
+        /* 🎨 오리지널 클래식 테마 */
         :root {
-            --bg-color: #f5f5f7; 
-            --surface-color: #ffffff; 
-            --text-main: #1a1a1a; 
-            --text-sub: #737373;
-            --accent-color: #1c2833; /* 세련된 다크 네이비 */
-            --accent-hover: #2c3e50; 
-            --border-color: #e2e8f0;
-            --border-radius: 8px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
-            
-            /* 메신저 */
-            --chat-bg: #b2c7d9;          
-            --my-bubble: #ffeb33;        
-            --other-bubble: #ffffff;     
+            --bg-color: #f5f5f7; --surface-color: #ffffff; --text-main: #1a1a1a; --text-sub: #737373;
+            --accent-color: #1c2833; --accent-hover: #2c3e50; --border-color: #e2e8f0; --border-radius: 8px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05); --chat-bg: #b2c7d9; --my-bubble: #ffeb33; --other-bubble: #ffffff;     
         }
-
         body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-weight: 300; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; letter-spacing: -0.3px; font-size: 14px; }
         .main-wrapper { max-width: 1000px; width: 100%; transition: all 0.3s ease; }
 
-        /* ========================================== */
-        /* 🔒 중앙 정렬 로그인 화면 */
-        /* ========================================== */
         #lockOverlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245, 245, 247, 0.95); z-index: 100; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: flex-start; flex-direction: column; padding: 50px 20px; overflow-y: auto;}
         #lockOverlay h3 { color: var(--accent-color); font-size: 1.8rem; margin-bottom: 20px; font-weight: 400; text-align: center;}
         
@@ -39,18 +24,15 @@
         .user-btn { padding: 10px 24px; font-size: 0.95rem; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; color: var(--text-main); transition: 0.2s; font-family: inherit; width: 110px;}
         .user-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
 
-        /* 언어 수동 설정 영역 */
         #manualLangContainer { display: none; margin-top: 15px; }
         .login-lang-selector { display: flex; justify-content: center; gap: 10px; }
         .login-lang-selector button { background: transparent; border: 1px solid var(--border-color); padding: 6px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; color: var(--text-main); font-family: inherit;}
         .login-lang-selector button.active { border-color: var(--accent-color); color: #fff; font-weight: 600; background: var(--accent-color);}
         .btn-manual-toggle { background: none; border: none; color: #888; text-decoration: underline; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin-top: 30px;}
 
-        /* 🏠 상단 바 */
         .user-bar { background: #fff; padding: 12px 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 20px; display: none; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
         .welcome-msg { font-size: 1rem; color: var(--accent-color); font-weight: 600;}
         .top-right-actions { display: flex; gap: 10px; }
-        
         button { font-family: inherit; font-weight: 300; outline: none;}
         .btn-toggle-mode { background: var(--accent-color); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;}
         .btn-toggle-mode:hover { background: var(--accent-hover); }
@@ -58,7 +40,6 @@
 
         .content-area { background: var(--surface-color); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); position: relative; border: 1px solid var(--border-color);}
 
-        /* 📂 사이드바 (메모) */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2); z-index: 150; }
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: #fff; padding: 30px 20px; z-index: 160; transition: left 0.3s ease; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; box-sizing: border-box; }
         .sidebar.open { left: 0; }
@@ -69,28 +50,20 @@
         .memo-item:hover { background: var(--bg-color); }
         .memo-item .date-label { color: var(--accent-color); font-weight: 600; display: block; margin-bottom: 4px; font-size: 0.9rem;}
 
-        /* ========================================== */
-        /* 📝 메모장 UI */
-        /* ========================================== */
         #memoModeUI { display: block; }
         .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
         .left-controls { flex: 1; }
         .center-controls { flex: 1; display: flex; justify-content: center; }
         .right-controls { flex: 1; display: flex; justify-content: flex-end; gap: 8px; }
-
         .info-group { background: var(--bg-color); padding: 8px 16px; border-radius: 20px; color: var(--accent-color); font-size: 0.9rem; text-align: center; border: 1px solid var(--border-color);}
-        
         button.action-btn { padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; color: var(--text-main); transition: 0.2s;}
         button.action-btn:hover { background: var(--bg-color); }
         .btn-save { background: var(--accent-color); color: #fff; border-color: var(--accent-color);}
-        .btn-save:hover { background: var(--accent-hover); color: #fff;}
         .btn-delete { color: #ef4444; border-color: #ffccd0; }
 
         .col-header { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; position: relative; min-height: 35px;}
         .col-header label { font-size: 1.1rem; color: var(--accent-color); font-weight: 600;}
-        .btn-mini-photo { position: absolute; right: 0; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; color: var(--text-main); transition: 0.2s;}
-        .btn-mini-photo:hover { background: var(--bg-color); }
-        
+        .btn-mini-photo { position: absolute; right: 0; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; color: var(--text-main);}
         .gallery-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
         .gallery-item { position: relative; width: 90px; height: 90px; border-radius: 6px; border: 1px solid var(--border-color); }
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; cursor: zoom-in; }
@@ -101,140 +74,76 @@
 
         .translation-actions { display: flex; gap: 10px; margin-top: 15px; }
         .translation-actions button { flex: 1; padding: 12px; background: #fff; color: var(--accent-color); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: 0.2s;}
-        .translation-actions button:hover { background: var(--bg-color); }
-
-        /* ========================================== */
-        /* 💬 메신저 UI */
-        /* ========================================== */
+        
         h2.chat-title { text-align: center; color: var(--accent-color); font-size: 1.4rem; font-weight: 600; margin: 0 0 20px 0;}
-        
         #chatModeUI { display: none; flex-direction: column; height: calc(100vh - 120px); min-height: 550px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #fff;}
-        
         .chat-room-header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); gap: 10px;}
-        .chat-room-header select { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-main); background: var(--bg-color); outline: none; flex: 1; font-family: inherit; font-size: 0.9rem;}
+        .chat-room-header select { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); outline: none; flex: 1; font-family: inherit;}
         .chat-room-actions { display: flex; gap: 8px; }
-        .chat-room-actions button { background: #fff; color: var(--text-main); padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-family: inherit; font-size: 0.85rem;}
-        .chat-room-actions button:hover { background: var(--bg-color); }
-        .chat-room-actions .btn-report { color: #10b981; border-color: #10b981;}
+        .chat-room-actions button { background: #fff; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-family: inherit; font-size: 0.85rem;}
 
         .chat-body-container { display: flex; flex: 1; position: relative; overflow: hidden; }
         .chat-main-section { display: flex; flex-direction: column; flex: 1; background: var(--chat-bg); }
-        
-        /* 팀원 사이드바 */
         .member-sidebar { position: absolute; right: -250px; top: 0; bottom: 0; width: 200px; background: #fff; border-left: 1px solid var(--border-color); transition: right 0.3s ease; z-index: 10; box-shadow: -2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow-y: auto;}
         .member-sidebar.open { right: 0; }
         .member-sidebar-title { padding: 15px; font-size: 0.9rem; color: var(--accent-color); font-weight: 600; border-bottom: 1px solid var(--border-color); text-align: center; background: #f8fafc;}
-        .status-badge { padding: 12px 15px; font-size: 0.9rem; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f8fafc; transition: 0.2s;}
-        .status-badge:hover { background: var(--bg-color); color: var(--accent-color);}
+        .status-badge { padding: 12px 15px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f8fafc;}
         
         .chat-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         .msg-row { display: flex; align-items: flex-end; max-width: 85%; position: relative; }
         .msg-row.me { align-self: flex-end; flex-direction: row-reverse; }
         .msg-row.other { align-self: flex-start; }
-        
         .sender-name { font-size: 0.75rem; color: #555; margin-bottom: 4px; margin-left: 4px; }
         .msg-content-wrapper { display: flex; flex-direction: column; }
         .msg-row.me .msg-content-wrapper { align-items: flex-end; }
-        
         .msg-meta { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px; gap: 3px; }
         .unread-cnt { color: #d97706; font-size: 0.75rem; font-weight: 600;}
-        .report-checkbox { display: none; width: 16px; height: 16px; cursor: pointer; }
-
-        .bubble { padding: 12px 16px; border-radius: 12px; position: relative; word-break: break-word; display: flex; flex-direction: column; gap: 6px; color: #000; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.1);}
+        .bubble { padding: 12px 16px; border-radius: 12px; position: relative; word-break: break-word; display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.1);}
         .msg-row.me .bubble { background: var(--my-bubble); border-bottom-right-radius: 2px; }
         .msg-row.other .bubble { background: var(--other-bubble); border-bottom-left-radius: 2px; }
         .bubble img { max-width: 220px; border-radius: 8px; cursor: zoom-in; border: 1px solid rgba(0,0,0,0.1);}
-        .bubble-file { background: #f8fafc; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;}
-        .bubble-file a { color: var(--accent-color); text-decoration: none; word-break: break-all;}
-
-        .mention { color: #d97706; font-weight: 600; background: rgba(255,235,51,0.5); padding: 0 4px; border-radius: 2px; }
+        .bubble-file { background: #f8fafc; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem;}
         .msg-main { line-height: 1.5; }
         .msg-sub-box { border-top: 1px solid rgba(0,0,0,0.1); padding-top: 6px; display: flex; flex-direction: column; gap: 4px; }
         .msg-sub { font-size: 0.8rem; color: #555; display: flex; align-items: flex-start; line-height: 1.3;}
-        .lang-badge { display: inline-block; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; color: #333; margin-right: 6px; margin-top: 1px; }
+        .lang-badge { display: inline-block; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; margin-right: 6px; }
 
         .chat-input-area { flex: 0 0 auto; background: #fff; padding: 15px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column;}
         .chat-preview-box { display: none; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
         .chat-preview-item { position: relative; border-radius: 6px; border: 1px solid var(--border-color); padding: 5px; background: var(--bg-color); font-size: 0.8rem;}
         .chat-preview-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
-        .chat-preview-item button { position: absolute; top: -5px; right: -5px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; }
-        
+        .chat-preview-item button { position: absolute; top: -5px; right: -5px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; font-size: 0.6rem; }
         .chat-controls { display: flex; gap: 10px; align-items: flex-end; width: 100%;}
-        .btn-square { background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-sub); width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0; transition: 0.2s;}
-        .btn-square:hover { background: #e2e8f0; color: var(--text-main);}
-        .btn-square.recording { background: #ef4444; color: white; border-color: #ef4444;}
-        
-        textarea.chat-ta { flex: 1 1 auto; height: 45px; min-width: 0; max-height: 100px; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; background: #fff; color: var(--text-main); line-height: 1.4; box-sizing: border-box; transition: 0.2s;}
-        textarea.chat-ta:focus { border-color: var(--accent-color); }
-        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 45px; padding: 0 24px; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-family: inherit; font-size: 0.95rem;}
+        .btn-square { background: var(--bg-color); border: 1px solid var(--border-color); width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0;}
+        textarea.chat-ta { flex: 1 1 auto; height: 45px; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; box-sizing: border-box;}
+        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 45px; padding: 0 24px; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-family: inherit;}
 
-        /* ========================================== */
-        /* 📅 달력 UI (높이 반응형 & 그리드 비율 조정) */
-        /* ========================================== */
-        .calendar-wrapper { 
-            flex: 0 1 35%; /* 화면 높이에 따라 유연하게 배분 */
-            min-height: 180px; /* 기존보다 훨씬 줄어든 최소 높이 */
-            max-height: 300px; /* 달력은 최대 이까지만 커짐 (그 이상은 채팅창 확장) */
-            background: #fff; 
-            border-top: 1px solid var(--border-color); 
-            padding: 10px 20px; 
-            box-sizing: border-box; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden;
-        }
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--text-main); font-size: 0.95rem; font-weight: 600;}
-        .cal-header button { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-sub); }
-        
-        .cal-grid { 
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            grid-template-rows: repeat(6, 1fr); /* 6줄을 균등 배분 */
-            gap: 4px; 
-            flex: 1; /* 남은 공간 모두 차지 */
-            min-height: 0; 
-        }
+        .calendar-wrapper { flex: 0 1 35%; min-height: 180px; max-height: 300px; background: #fff; border-top: 1px solid var(--border-color); padding: 10px 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;}
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.95rem; font-weight: 600;}
+        .cal-header button { background: none; border: none; font-size: 1.1rem; cursor: pointer;}
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr); gap: 4px; flex: 1; min-height: 0; }
         .cal-day-name { text-align: center; font-size: 0.75rem; color: var(--text-sub); padding-bottom: 2px; }
-        
-        .cal-cell { 
-            height: 100%; /* 부모(grid)가 주는 높이에 꽉 참 (최소 높이 강제 제한 해제) */
-            background: var(--bg-color); 
-            border-radius: 4px; 
-            border: 1px solid var(--border-color); 
-            display: flex; 
-            flex-direction: column; 
-            padding: 2px 4px; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            position: relative;
-            overflow: hidden; /* 작아질 때 넘치는 글씨 숨김 */
-        }
-        .cal-cell:hover { background: #e2e8f0; }
+        .cal-cell { height: 100%; background: var(--bg-color); border-radius: 4px; border: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 2px 4px; cursor: pointer; position: relative; overflow: hidden; }
         .cal-date-num { font-size: 0.75rem; color: var(--text-sub); }
         .cal-today { background: #fff; border: 1px solid var(--accent-color); }
         .cal-today .cal-date-num { color: var(--accent-color); font-weight: 600;}
         .cal-event-dot { background: #ef4444; width: 4px; height: 4px; border-radius: 50%; position: absolute; top: 4px; right: 4px; }
-        
-        .cal-event-text { font-size: 0.65rem; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 1px; padding: 1px 2px;}
-        .cal-event-more { font-size: 0.65rem; color: var(--text-sub); text-align: right; margin-top: auto;}
+        .cal-event-text { font-size: 0.65rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 1px; padding: 1px 2px;}
 
-        /* 공통 팝업 모달 */
         .trans-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
         .trans-modal { background: #fff; width: 90%; max-width: 400px; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 80vh; display: flex; flex-direction: column;}
-        .trans-modal h3 { margin-top: 0; color: var(--accent-color); font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; font-weight: 600; text-align: center; flex: 0 0 auto;}
-        .trans-modal input[type="password"], .trans-modal input[type="text"], .trans-modal textarea { width: 100%; box-sizing: border-box; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; padding: 10px 12px; font-family: inherit; font-size: 0.95rem; outline: none;}
+        .trans-modal h3 { margin-top: 0; color: var(--accent-color); font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; font-weight: 600; text-align: center;}
+        .trans-modal input, .trans-modal textarea, .trans-modal select { width: 100%; box-sizing: border-box; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; padding: 10px 12px; font-family: inherit; font-size: 0.95rem; outline: none;}
         .trans-modal textarea { height: 180px; resize: none; }
-        .trans-modal-btns { display: flex; justify-content: center; gap: 10px; flex: 0 0 auto; margin-top: 15px;}
-        .trans-modal-btns button { flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; border: 1px solid var(--border-color); background: #fff; color: var(--text-main);}
+        .trans-modal-btns { display: flex; justify-content: center; gap: 10px;}
+        .trans-modal-btns button { flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; border: 1px solid var(--border-color); background: #fff;}
         .trans-modal-btns .btn-save { background: var(--accent-color); color: #fff; border-color: var(--accent-color);}
 
-        /* ⭐️ 달력 상세 모달 전용 */
         #calModalEventList { flex: 1 1 auto; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px;}
         .cal-modal-item { background: var(--bg-color); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 0.9rem;}
         .cal-modal-item div { display: flex; gap: 5px; flex-shrink: 0;}
         .cal-modal-item button { padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: #fff; cursor: pointer;}
-        
-        .invite-user-btn { padding: 8px; font-size: 0.85rem; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; flex: 1 1 calc(33% - 10px); transition: 0.2s;}
+        .invite-user-btn { padding: 8px; font-size: 0.85rem; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; flex: 1 1 calc(33% - 10px);}
         .invite-user-btn.selected { background: var(--accent-color); color: #fff; border-color: var(--accent-color);}
 
         #lightboxOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; flex-direction: column; }
@@ -258,7 +167,7 @@
         <h3 id="pwModalUserName">로그인</h3>
         <input type="password" id="pwModalInput" placeholder="비밀번호 입력">
         <div class="trans-modal-btns">
-            <button class="btn-save" onclick="submitPw()">확인</button>
+            <button class="btn-save" id="btnSubmitPw" onclick="submitPw()">확인</button>
             <button onclick="document.getElementById('pwModalOverlay').style.display='none'">취소</button>
         </div>
     </div>
@@ -293,10 +202,15 @@
         <h3 id="calModalDateTitle">일정 관리</h3>
         <div id="calModalEventList"></div>
         <div style="display:flex; gap:8px; margin-top:auto;">
-            <input type="text" id="newCalEventInput" placeholder="새로운 일정 입력..." style="margin-bottom:0;">
+            <select id="newCalTimeSelect" style="margin-bottom:0; flex:0 0 80px;">
+                <option value="all" id="optTimeAll">종일</option>
+                <option value="am" id="optTimeAM">오전</option>
+                <option value="pm" id="optTimePM">오후</option>
+            </select>
+            <input type="text" id="newCalEventInput" placeholder="새로운 일정 입력..." style="margin-bottom:0; flex:1;">
             <button class="btn-save" style="flex:0 0 auto; border-radius:8px; border:none; padding:0 15px; cursor:pointer;" onclick="addNewEvent()">추가</button>
         </div>
-        <div class="trans-modal-btns">
+        <div class="trans-modal-btns" style="margin-top:15px;">
             <button onclick="closeCalModal()">닫기</button>
         </div>
     </div>
@@ -315,22 +229,11 @@
 <div class="main-wrapper">
     <div id="lockOverlay">
         <h3 id="ui_lockTitle">KNC Tri-Connect</h3>
-        
         <div class="login-container">
-            <div class="login-section">
-                <div class="login-section-title">Korea (Auto KR)</div>
-                <div class="user-grid" id="grid_ko"></div>
-            </div>
-            <div class="login-section">
-                <div class="login-section-title">Vietnam (Auto VN)</div>
-                <div class="user-grid" id="grid_vi"></div>
-            </div>
-            <div class="login-section">
-                <div class="login-section-title">English (Auto EN)</div>
-                <div class="user-grid" id="grid_en"></div>
-            </div>
+            <div class="login-section"><div class="login-section-title">Korea (Auto KR)</div><div class="user-grid" id="grid_ko"></div></div>
+            <div class="login-section"><div class="login-section-title">Vietnam (Auto VN)</div><div class="user-grid" id="grid_vi"></div></div>
+            <div class="login-section"><div class="login-section-title">English (Auto EN)</div><div class="user-grid" id="grid_en"></div></div>
         </div>
-
         <button class="btn-manual-toggle" onclick="document.getElementById('manualLangContainer').style.display='block'; this.style.display='none';">언어 수동 설정 (Manual Language)</button>
         <div id="manualLangContainer">
             <div class="login-lang-selector">
@@ -356,13 +259,11 @@
                 <div class="center-controls"><div class="info-group" id="ui_dateGroup">새 업무 기록 작성 중...</div></div>
                 <div class="right-controls"><button class="action-btn" id="ui_btnNew" onclick="startNewMemo()">새 기록</button><button class="action-btn btn-save" id="ui_btnSave" onclick="saveMemo()">저장</button><button class="action-btn btn-delete" id="ui_btnDelete" onclick="deleteMemo()">삭제</button></div>
             </div>
-
             <div class="col-header">
                 <label id="ui_memoLabel">업무 기록</label>
                 <button class="btn-mini-photo" id="ui_btnPhoto" onclick="document.getElementById('photoInput').click()">사진 첨부</button>
                 <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event)">
             </div>
-            
             <div class="gallery-container" id="photoGallery"></div>
             <textarea id="mainText" class="memo-ta" placeholder="현장 업무 내용을 상세히 기록하세요..."></textarea>
             <div class="translation-actions" id="translationActions"></div>
@@ -370,7 +271,6 @@
 
         <div id="chatModeUI">
             <h2 class="chat-title" id="ui_chatTitle">KNC Tri-Connect</h2>
-            
             <div class="chat-room-header">
                 <select id="chatRoomSelect" onchange="changeChatRoom()"></select>
                 <div class="chat-room-actions">
@@ -378,11 +278,9 @@
                     <button id="ui_btnCreateRoom" onclick="openCreateRoomModal()">방생성(+초대)</button>
                 </div>
             </div>
-            
             <div class="chat-body-container">
                 <div class="chat-main-section">
                     <div class="chat-area" id="chatArea"></div>
-                    
                     <div class="chat-input-area">
                         <div class="chat-preview-box" id="chatPreviewBox"></div>
                         <div class="chat-controls">
@@ -390,13 +288,11 @@
                             <button class="btn-square" onclick="document.getElementById('chatFileInput').click()">📎</button>
                             <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatMedia(event, 'image')">
                             <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="handleChatMedia(event, 'file')">
-                            
                             <textarea id="chatInput" class="chat-ta" placeholder="메시지 입력..."></textarea>
                             <button class="btn-send" id="ui_btnSend" onclick="sendChatMessage()">전송</button>
                         </div>
                     </div>
                 </div>
-                
                 <div class="member-sidebar" id="memberSidebar">
                     <div class="member-sidebar-title">접속 상태 & 1:1 채팅</div>
                     <div id="onlineStatusBox"></div>
@@ -419,32 +315,44 @@
     if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
     const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'knc_online_v6') renderOnlineStatus();
-        if (e.key === 'knc_rooms_v13') { chatRooms = JSON.parse(e.newValue || '[]'); initChatRooms(); }
-        if (e.key === 'knc_cal_v7') { events = JSON.parse(e.newValue || '[]'); renderCalendar(); if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents(); }
-        if (e.key === 'knc_chat_v13') {
-            const oldData = JSON.parse(e.oldValue || '[]'); const newData = JSON.parse(e.newValue || '[]');
-            chatHistory = newData; 
-            if (newData.length > oldData.length) {
-                const latestMsg = newData[newData.length - 1];
-                if (latestMsg.sender !== currentUser && latestMsg.roomId === currentRoomId) {
-                    alertSound.play().catch(err => {});
-                    if (Notification.permission === "granted") new Notification(`Messenger - ${latestMsg.sender}`, { body: latestMsg.original });
-                }
-            }
-            renderChatUI(); 
-        }
-    });
-
+    // ⭐️ USER_DB 영구 삭제! 그룹 명단만 남김
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz3-OLwwq3hIjQwU2EYp0ST99rydMqjcgjkjAwXy3YBzHquKaQgKhPYLO2NYNrCIJn-/exec"; 
+    const UI_DICT = {
+        ko: { list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", memoLabel: "업무 기록", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMsg: "메신저 열기", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "메시지 입력...", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후" },
+        vi: { list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", memoLabel: "Ghi chú", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMsg: "Mở Messenger", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Nhập tin nhắn...", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều" },
+        en: { list: "List", new: "New", save: "Save", del: "Delete", memoLabel: "Work Memo", photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMsg: "Open Messenger", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Message...", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM" }
+    };
+
+    // ⭐️ 서버 주소 연동
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxtl4qfihxMTV1GInflMT_kMKlD4b9QPdCMcx7y6G2vD2ZFMdfF_tx4EahVc681R0iSWQ/exec"; 
 
     let currentUser = null; let selectedLang = 'ko'; let appMode = 'memo'; 
-    let manualLang = null; 
-    let selectedLoginUser = ''; let selectedLoginGroupLang = '';
+    let manualLang = null; let selectedLoginUser = ''; let selectedLoginGroupLang = '';
     
+    // DB 구조 (모든 유저 목록은 GROUPS 에서 추출)
+    const allUsers = [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en];
+    let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
+    let currentRoomId = 'room_gen'; let chatHistory = JSON.parse(localStorage.getItem('knc_chat_v13')) || []; 
+    let events = JSON.parse(localStorage.getItem('knc_cal_v7')) || [];
+
+    // 🟢 실시간 동기화 함수
+    async function syncData() {
+        try {
+            const res = await fetch(`${GAS_URL}?action=readAll`);
+            const result = await res.json();
+            if (result.status === "success") {
+                if (result.chats && result.chats.length > 0) chatHistory = result.chats;
+                if (result.events && result.events.length > 0) events = result.events;
+                localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
+                localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+                if(appMode === 'chat') renderChatUI();
+                renderCalendar();
+                if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents();
+            }
+        } catch(e) { console.log("동기화 중..."); }
+    }
+
     function initLoginScreen() {
         ['ko', 'vi', 'en'].forEach(lang => {
             const grid = document.getElementById(`grid_${lang}`); grid.innerHTML = '';
@@ -471,17 +379,19 @@
         document.getElementById('pwModalInput').onkeypress = e => { if(e.key==='Enter') submitPw(); };
     }
 
-   async function submitPw() {
+    // 🟢 완벽하게 수정된 보안 로그인 함수
+    async function submitPw() {
         const pwd = document.getElementById('pwModalInput').value;
         if(!pwd) return alert("비밀번호를 입력하세요.");
         
-        // 로그인 버튼(또는 사용자 이름)을 '확인 중...'으로 변경
+        const btn = document.getElementById('btnSubmitPw');
         const nameTitle = document.getElementById('pwModalUserName');
         const originalName = selectedLoginUser;
-        nameTitle.innerText = "확인 중..."; 
+        
+        btn.innerText = "확인 중..."; btn.disabled = true;
+        nameTitle.innerText = "확인 중...";
 
         try {
-            // 구글 시트(GAS) 서버에 인증 요청
             const res = await fetch(GAS_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: 'login', data: { user: selectedLoginUser, password: pwd } })
@@ -489,7 +399,6 @@
             const result = await res.json();
 
             if (result.status === "success") {
-                // 인증 성공 시 화면 열기
                 currentUser = selectedLoginUser;
                 selectedLang = manualLang ? manualLang : selectedLoginGroupLang;
                 
@@ -497,47 +406,43 @@
                 document.getElementById('lockOverlay').style.display = 'none';
                 document.getElementById('topUserBar').style.display = 'flex';
                 
-                // 로그인 성공 후 초기 세팅 및 동기화 시작
-                applyAppLanguage(); 
-                if(typeof initChatRooms === 'function') initChatRooms(); 
-                if(typeof renderCalendar === 'function') renderCalendar(); 
+                applyAppLanguage(); startNewMemo(); refreshList(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
                 
-                syncData(); // 즉시 동기화 1회
-                setInterval(syncData, 5000); // 5초마다 동기화 시작
+                syncData(); // 필수 함수 호출!
+                setInterval(syncData, 5000); 
             } else {
                 alert("비밀번호가 틀렸습니다.");
-                nameTitle.innerText = originalName; // 이름 원상복구
+                nameTitle.innerText = originalName;
             }
         } catch(e) { 
-            alert("서버 연결에 실패했습니다."); 
+            alert("서버 통신 실패. URL이나 인터넷을 확인하세요."); 
             nameTitle.innerText = originalName;
+        } finally {
+            btn.innerText = "확인"; btn.disabled = false;
         }
     }
 
-    const UI_DICT = {
-        ko: { list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", memoLabel: "업무 기록", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMsg: "메신저 열기", btnMem: "팀원 목록", btnCloseMem: "목록 닫기" },
-        vi: { list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", memoLabel: "Ghi chú", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMsg: "Mở Messenger", btnMem: "Thành viên", btnCloseMem: "Đóng" },
-        en: { list: "List", new: "New", save: "Save", del: "Delete", memoLabel: "Work Memo", photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMsg: "Open Messenger", btnMem: "Member List", btnCloseMem: "Close List" }
-    };
-
     function applyAppLanguage() {
-        const dict = UI_DICT[selectedLang];
-        document.getElementById('ui_btnList').innerText = dict.list;
-        document.getElementById('ui_btnNew').innerText = dict.new;
-        document.getElementById('ui_btnSave').innerText = dict.save;
-        document.getElementById('ui_btnDelete').innerText = dict.del;
-        document.getElementById('ui_memoLabel').innerText = dict.memoLabel;
-        document.getElementById('ui_btnPhoto').innerText = dict.photo;
+        const d = UI_DICT[selectedLang];
+        document.getElementById('ui_btnList').innerText = d.list;
+        document.getElementById('ui_btnNew').innerText = d.new;
+        document.getElementById('ui_btnSave').innerText = d.save;
+        document.getElementById('ui_btnDelete').innerText = d.del;
+        document.getElementById('ui_memoLabel').innerText = d.memoLabel;
+        document.getElementById('ui_btnPhoto').innerText = d.photo;
         document.getElementById('ui_btnLogout').innerText = selectedLang === 'ko' ? "로그아웃" : "Logout";
         document.getElementById('welcomeMsg').innerText = `${currentUser} (${LANG_NAMES[selectedLang]})`;
-        document.getElementById('ui_btnCreateRoom').innerText = selectedLang === 'ko' ? "방생성(+초대)" : "Create Room";
-        document.getElementById('ui_btnSend').innerText = selectedLang === 'ko' ? "전송" : "Send";
         
+        document.getElementById('chatInput').placeholder = d.chatPH;
+        document.getElementById('ui_btnSend').innerText = d.btnSend;
+        document.getElementById('ui_btnCreateRoom').innerText = d.btnCreateRoom;
+        document.getElementById('optTimeAll').innerText = d.timeAll;
+        document.getElementById('optTimeAM').innerText = d.timeAM;
+        document.getElementById('optTimePM').innerText = d.timePM;
+
         const sb = document.getElementById('memberSidebar');
-        if(appMode === 'chat') {
-            document.getElementById('btnToggleMemberList').innerText = sb.classList.contains('open') ? dict.btnCloseMem : dict.btnMem;
-        }
-        document.getElementById('btnToggleMode').innerText = appMode === 'memo' ? dict.btnMsg : (selectedLang === 'ko' ? "메모장 전환" : "Back to Memo");
+        if(appMode === 'chat') document.getElementById('btnToggleMemberList').innerText = sb.classList.contains('open') ? d.btnCloseMem : d.btnMem;
+        document.getElementById('btnToggleMode').innerText = appMode === 'memo' ? d.btnMsg : (selectedLang === 'ko' ? "메모장 전환" : "Back to Memo");
         renderTranslationButtons();
     }
 
@@ -572,15 +477,23 @@
     }
     function renderGallery() { const g = document.getElementById('photoGallery'); g.innerHTML = ''; currentMemoImages.forEach((s, i) => { g.innerHTML += `<div class="gallery-item"><button class="btn-remove-photo" onclick="currentMemoImages.splice(${i},1);renderGallery()">✖</button><img src="${s}" onclick="openLightbox(this.src)"></div>`; }); }
     function startNewMemo() { curMemId = null; currentMemoImages = []; document.getElementById('mainText').value = ""; renderGallery(); document.getElementById('ui_dateGroup').innerText = UI_DICT[selectedLang].newDisplay; }
-    function saveMemo() {
+    
+    async function saveMemo() {
         if(!currentUser) return;
         const val = document.getElementById('mainText').value; if(!val && currentMemoImages.length===0) return alert("내용을 입력하세요.");
         if(!curMemId) curMemId = Date.now().toString();
         const d = new Date(parseInt(curMemId)); const dS = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; const tS = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        try { localStorage.setItem(`m_${currentUser}_${curMemId}`, JSON.stringify({id:curMemId, date:dS, time:tS, text:val, images:currentMemoImages})); document.getElementById('ui_dateGroup').innerText = `${dS} ${tS}`; alert("저장되었습니다!"); refreshList(); } catch(e) { alert("용량 초과!"); }
+        const memoData = {id:curMemId, date:dS, time:tS, text:val, images:currentMemoImages, user:currentUser};
+        try { 
+            localStorage.setItem(`m_${currentUser}_${curMemId}`, JSON.stringify(memoData)); 
+            document.getElementById('ui_dateGroup').innerText = `${dS} ${tS}`; 
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveMemo', data: memoData }) }).catch(e=>{});
+            alert("저장되었습니다!"); refreshList(); 
+        } catch(e) { alert("용량 초과!"); }
     }
+    
     function loadDataById(id) { const d = JSON.parse(localStorage.getItem(`m_${currentUser}_${id}`)); if(d) { curMemId = d.id; document.getElementById('mainText').value = d.text || ""; currentMemoImages = d.images || []; renderGallery(); document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; } }
-    function deleteMemo() { if(curMemId && confirm("삭제하시겠습니까?")) { localStorage.removeItem(`m_${currentUser}_${curMemId}`); startNewMemo(); refreshList(); } }
+    function deleteMemo() { if(curMemId && confirm("삭제하시겠습니까?")) { localStorage.removeItem(`m_${currentUser}_${curMemId}`); fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteMemo', data: {id:curMemId} }) }).catch(e=>{}); startNewMemo(); refreshList(); } }
     function refreshList() {
         if(!currentUser) return;
         const l = document.getElementById('memoList'); l.innerHTML = ""; const k = document.getElementById('searchInput').value.toLowerCase(); const rs = [];
@@ -594,6 +507,7 @@
     }
     function toggleSidebar() { const s = document.getElementById('sidebar'); s.classList.toggle('open'); document.getElementById('sidebarOverlay').style.display = s.classList.contains('open') ? 'block' : 'none'; }
     function openLightbox(s) { document.getElementById('lightboxImg').src = s; document.getElementById('lightboxOverlay').style.display = 'flex'; }
+    function closeLightbox() { document.getElementById('lightboxOverlay').style.display = 'none'; }
     function closeTransModal() { document.getElementById('transModalOverlay').style.display = 'none'; }
     function copyTranslation() { const t = document.getElementById('transResultText'); t.select(); navigator.clipboard.writeText(t.value).then(() => alert("복사 완료!")); }
     function renderTranslationButtons() {
@@ -608,35 +522,21 @@
     }
 
     // ==========================================
-    // 💬 3. 메신저 로직 (사이드바 토글 및 첨부)
+    // 💬 3. 메신저 로직 (보안 및 개인챗 필터링 적용)
     // ==========================================
-    // ⭐️ 1. KNC 공용 대화방 이름 변경 (KNC Group)
-    let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: Object.keys(USER_DB)}];
-    let currentRoomId = 'room_gen'; let chatHistory = JSON.parse(localStorage.getItem('knc_chat_v13')) || []; 
     let curChatMedia = null; 
-
-    // 팀원 목록 사이드바 토글 기능
     function toggleMemberList() {
-        const sb = document.getElementById('memberSidebar');
-        const btn = document.getElementById('btnToggleMemberList');
-        if (sb.classList.contains('open')) {
-            sb.classList.remove('open');
-            btn.innerText = UI_DICT[selectedLang].btnMem;
-        } else {
-            sb.classList.add('open');
-            btn.innerText = UI_DICT[selectedLang].btnCloseMem;
-        }
+        const sb = document.getElementById('memberSidebar'); const btn = document.getElementById('btnToggleMemberList');
+        if (sb.classList.contains('open')) { sb.classList.remove('open'); btn.innerText = UI_DICT[selectedLang].btnMem; } 
+        else { sb.classList.add('open'); btn.innerText = UI_DICT[selectedLang].btnCloseMem; }
     }
 
-    // ⭐️ 2. 팀원 목록은 해당 방의 멤버만 뜨도록 수정
     function renderOnlineStatus() {
         const box = document.getElementById('onlineStatusBox');
         let onlineDB = JSON.parse(localStorage.getItem('knc_online_v6')) || {};
         let html = '';
-        
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
         if(!curRoom) return;
-
         curRoom.members.forEach(user => { 
             let status = onlineDB[user] ? '🟢' : '⚪'; 
             html += `<div class="status-badge" onclick="openPrivateChat('${user}')">${status} ${user}</div>`; 
@@ -651,23 +551,16 @@
         initChatRooms(); renderChatUI(); 
     }
     
-    // ⭐️ 3. 1:1 개인챗은 해당자만 볼 수 있게 리스트에서 차단
+    // 🟢 개인방 차단 로직 적용
     function initChatRooms() { 
         const sel = document.getElementById('chatRoomSelect'); sel.innerHTML = ''; 
         chatRooms.forEach(r => { 
-            const isPrivate = r.name.startsWith('💬 1:1');
-            const isMember = r.members.includes(currentUser);
-            
-            if (isPrivate && !isMember) return; // 당사자 아니면 아예 안 뜨게 차단
-            
-            let prefix = isMember ? "" : "🔒 "; 
-            sel.innerHTML += `<option value="${r.id}">${prefix}${r.name}</option>`; 
+            if (r.id === 'room_gen' || r.members.includes(currentUser)) {
+                sel.innerHTML += `<option value="${r.id}">${r.name}</option>`; 
+            }
         }); 
-        
-        // 현재 방이 내가 볼 수 없는 방이면 KNC Group으로 돌림
         let validRoom = Array.from(sel.options).find(opt => opt.value === currentRoomId);
         if(!validRoom) currentRoomId = 'room_gen';
-        
         sel.value = currentRoomId; 
     }
 
@@ -675,15 +568,14 @@
         currentRoomId = document.getElementById('chatRoomSelect').value; 
         const curRoom = chatRooms.find(r => r.id === currentRoomId); 
         if(!curRoom.members.includes(currentUser)) { curRoom.members.push(currentUser); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); initChatRooms(); } 
-        renderOnlineStatus(); // 방 바꿀때마다 접속자 목록 갱신
-        renderChatUI(); 
+        renderOnlineStatus(); renderChatUI(); 
     }
 
     let selectedInvitees = [];
     function openCreateRoomModal() {
         document.getElementById('newRoomNameInput').value = ''; selectedInvitees = [];
         const grid = document.getElementById('inviteUserGrid'); grid.innerHTML = '';
-        Object.keys(USER_DB).forEach(u => { if(u !== currentUser) { const btn = document.createElement('button'); btn.className = 'invite-user-btn'; btn.innerText = u; btn.onclick = () => { if(selectedInvitees.includes(u)) { selectedInvitees = selectedInvitees.filter(id => id !== u); btn.classList.remove('selected'); } else { selectedInvitees.push(u); btn.classList.add('selected'); } }; grid.appendChild(btn); } });
+        allUsers.forEach(u => { if(u !== currentUser) { const btn = document.createElement('button'); btn.className = 'invite-user-btn'; btn.innerText = u; btn.onclick = () => { if(selectedInvitees.includes(u)) { selectedInvitees = selectedInvitees.filter(id => id !== u); btn.classList.remove('selected'); } else { selectedInvitees.push(u); btn.classList.add('selected'); } }; grid.appendChild(btn); } });
         document.getElementById('createRoomModalOverlay').style.display = 'flex';
     }
     function closeCreateRoomModal() { document.getElementById('createRoomModalOverlay').style.display = 'none'; }
@@ -703,8 +595,7 @@
                 const img = new Image(); img.onload = () => { const cvs = document.createElement('canvas'); let w=img.width, h=img.height; if(w>800){ h*=800/w; w=800; } cvs.width=w; cvs.height=h; cvs.getContext('2d').drawImage(img,0,0,w,h); 
                 curChatMedia = { type: 'image', data: cvs.toDataURL('image/jpeg', 0.6) }; showChatMediaPreview(); }; img.src = ev.target.result; 
             } else { curChatMedia = { type: 'file', data: ev.target.result, name: f.name }; showChatMediaPreview(); }
-        }; 
-        r.readAsDataURL(f); e.target.value = '';
+        }; r.readAsDataURL(f); e.target.value = '';
     }
 
     function showChatMediaPreview() {
@@ -728,7 +619,10 @@
                 const targetMsg = chatHistory.find(m => m.id === mid);
                 if (targetMsg) { targetMsg[targets[0]] = data1.translatedText; targetMsg[targets[1]] = data2.translatedText; targetMsg.status = 'done'; }
                 saveAndRender();
+                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveChat', data: targetMsg }) }).catch(e=>{});
             } catch (e) { const targetMsg = chatHistory.find(m => m.id === mid); if (targetMsg) targetMsg.status = 'error'; saveAndRender(); }
+        } else if (nm.media) {
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveChat', data: nm }) }).catch(e=>{});
         }
     }
     function saveAndRender() { localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory)); renderChatUI(); }
@@ -766,9 +660,8 @@
     }
 
     // ==========================================
-    // 📅 4. 달력 (다중 일정 및 팝업 모달 관리)
+    // 📅 4. 달력 (시간대 선택 및 동기화)
     // ==========================================
-    let currentDate = new Date(); let events = JSON.parse(localStorage.getItem('knc_cal_v7')) || [];
     let calSelectedDate = null; 
 
     function renderCalendar() {
@@ -784,7 +677,11 @@
             const dayEvents = events.filter(e => e.date === dateStr);
             
             let eventHTML = '';
-            dayEvents.slice(0, 2).forEach(e => { eventHTML += `<div class="cal-event-text"><strong>[${e.user}]</strong> ${e.text}</div>`; });
+            dayEvents.slice(0, 2).forEach(e => { 
+                const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll');
+                const tLabel = UI_DICT[selectedLang][tKey] || '종일';
+                eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.text}</div>`; 
+            });
             if(dayEvents.length > 2) { eventHTML += `<div class="cal-event-more">+${dayEvents.length - 2} 더보기</div>`; }
             if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
 
@@ -795,11 +692,7 @@
     function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
     
     function openCalModal(dateStr) {
-        calSelectedDate = dateStr;
-        document.getElementById('calModalDateTitle').innerText = `${dateStr} 일정 관리`;
-        document.getElementById('newCalEventInput').value = '';
-        renderCalModalEvents();
-        document.getElementById('calModalOverlay').style.display = 'flex';
+        calSelectedDate = dateStr; document.getElementById('calModalDateTitle').innerText = `${dateStr} 일정 관리`; document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); document.getElementById('calModalOverlay').style.display = 'flex';
     }
 
     function closeCalModal() { document.getElementById('calModalOverlay').style.display = 'none'; }
@@ -809,23 +702,25 @@
         const dayEvents = events.filter(e => e.date === calSelectedDate);
         if(dayEvents.length === 0) { list.innerHTML = '<div style="text-align:center; color:#888; padding:20px 0;">등록된 일정이 없습니다.</div>'; return; }
         dayEvents.forEach(e => {
-            list.innerHTML += `<div class="cal-modal-item"><span><strong>[${e.user}]</strong> ${e.text}</span><div><button onclick="editEvent('${e.id}')">수정</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">삭제</button></div></div>`;
+            const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll');
+            const tLabel = UI_DICT[selectedLang][tKey] || '종일';
+            list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="editEvent('${e.id}')">수정</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">삭제</button></div></div>`;
         });
     }
 
     function addNewEvent() {
-        const text = document.getElementById('newCalEventInput').value.trim();
-        if(!text) return alert("일정 내용을 입력하세요.");
-        events.push({ id: 'evt_' + Date.now(), date: calSelectedDate, text: text, user: currentUser });
-        localStorage.setItem('knc_cal_v7', JSON.stringify(events));
-        document.getElementById('newCalEventInput').value = '';
-        renderCalModalEvents(); renderCalendar();
+        const text = document.getElementById('newCalEventInput').value.trim(); if(!text) return alert("일정 내용을 입력하세요.");
+        const tType = document.getElementById('newCalTimeSelect').value;
+        const newEvt = { id: 'evt_' + Date.now(), date: calSelectedDate, text: text, user: currentUser, timeType: tType };
+        events.push(newEvt); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveEvent', data: newEvt }) }).catch(e=>{});
+        document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); renderCalendar();
     }
 
     function deleteEvent(id) {
         if(confirm("이 일정을 삭제하시겠습니까?")) {
-            events = events.filter(e => e.id !== id);
-            localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+            events = events.filter(e => e.id !== id); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteEvent', data: {id:id} }) }).catch(e=>{});
             renderCalModalEvents(); renderCalendar();
         }
     }
@@ -834,13 +729,18 @@
         const evt = events.find(e => e.id === id); if(!evt) return;
         const newText = prompt("일정을 수정하세요:", evt.text);
         if(newText && newText.trim() !== '') {
-            evt.text = newText.trim();
-            localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+            evt.text = newText.trim(); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
             renderCalModalEvents(); renderCalendar();
         }
     }
 
     window.onload = initLoginScreen;
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'knc_online_v6') renderOnlineStatus();
+        if (e.key === 'knc_rooms_v13') { chatRooms = JSON.parse(e.newValue || '[]'); initChatRooms(); }
+        if (e.key === 'knc_cal_v7') { events = JSON.parse(e.newValue || '[]'); renderCalendar(); if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents(); }
+        if (e.key === 'knc_chat_v13') { const oldData = JSON.parse(e.oldValue || '[]'); const newData = JSON.parse(e.newValue || '[]'); chatHistory = newData; if (newData.length > oldData.length) { const latestMsg = newData[newData.length - 1]; if (latestMsg.sender !== currentUser && latestMsg.roomId === currentRoomId) { alertSound.play().catch(err => {}); if (Notification.permission === "granted") new Notification(`Messenger - ${latestMsg.sender}`, { body: latestMsg.original }); } } renderChatUI(); }
+    });
     document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
     document.getElementById('newCalEventInput').addEventListener('keypress', e => { if(e.key==='Enter') { e.preventDefault(); addNewEvent(); } });
 </script>
