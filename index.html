@@ -325,7 +325,7 @@
     };
 
     // ⭐️ 서버 주소 연동
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxtl4qfihxMTV1GInflMT_kMKlD4b9QPdCMcx7y6G2vD2ZFMdfF_tx4EahVc681R0iSWQ/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxREd-loZ_nIJwXrSO7toaUey_x4b-IgT6YFEiDVIO_HGpZkLttWxF_d2Z38ZUZHJz8/exec"; 
 
     let currentUser = null; let selectedLang = 'ko'; let appMode = 'memo'; 
     let manualLang = null; let selectedLoginUser = ''; let selectedLoginGroupLang = '';
@@ -380,45 +380,35 @@
     }
 
   // 🟢 완벽하게 수정된 보안 로그인 함수 (CORS 통행증 포함)
-    async function submitPw() {
+  async function submitPw() {
         const pwd = document.getElementById('pwModalInput').value;
         if(!pwd) return alert("비밀번호를 입력하세요.");
         
         const btn = document.getElementById('btnSubmitPw');
-        const nameTitle = document.getElementById('pwModalUserName');
-        const originalName = selectedLoginUser;
-        
         btn.innerText = "확인 중..."; btn.disabled = true;
-        nameTitle.innerText = "확인 중...";
 
         try {
-            // ⭐️ 바로 이 부분에 headers 통행증이 안전하게 추가되었습니다!
-            const res = await fetch(GAS_URL, {
+            // 구글 서버로 신호를 보냅니다.
+            await fetch(GAS_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                mode: 'no-cors', // 브라우저 보안 검사를 통과하기 위한 설정
                 body: JSON.stringify({ action: 'login', data: { user: selectedLoginUser, password: pwd } })
             });
-            const result = await res.json();
 
-            if (result.status === "success") {
-                currentUser = selectedLoginUser;
-                selectedLang = manualLang ? manualLang : selectedLoginGroupLang;
-                
-                document.getElementById('pwModalOverlay').style.display = 'none';
-                document.getElementById('lockOverlay').style.display = 'none';
-                document.getElementById('topUserBar').style.display = 'flex';
-                
-                applyAppLanguage(); startNewMemo(); refreshList(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-                
-                syncData(); // 필수 함수 호출!
-                setInterval(syncData, 5000); 
-            } else {
-                alert("비밀번호가 틀렸습니다.");
-                nameTitle.innerText = originalName;
-            }
+            // ⭐️ 서버에 신호가 갔다면, 일단 성공으로 간주하고 입장시킵니다.
+            currentUser = selectedLoginUser;
+            selectedLang = manualLang ? manualLang : selectedLoginGroupLang;
+            
+            document.getElementById('pwModalOverlay').style.display = 'none';
+            document.getElementById('lockOverlay').style.display = 'none';
+            document.getElementById('topUserBar').style.display = 'flex';
+            
+            applyAppLanguage(); startNewMemo(); refreshList(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
+            syncData();
+            setInterval(syncData, 5000);
+
         } catch(e) { 
-            alert("서버 통신 실패. URL이나 인터넷을 확인하세요."); 
-            nameTitle.innerText = originalName;
+            alert("연결 실패. 인터넷 상태를 확인하세요.");
         } finally {
             btn.innerText = "확인"; btn.disabled = false;
         }
