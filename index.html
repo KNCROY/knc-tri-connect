@@ -437,7 +437,6 @@
         }
     });
 
-    const USER_DB = { "Allen":"1234", "Roy":"1234", "Max":"1234", "Ms.Choi":"1234", "Dung A":"1234", "Loan":"1234", "Vuong":"1234", "Dung B":"1234", "Thanh":"1234", "User":"1234" };
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     const GAS_URL = "https://script.google.com/macros/s/AKfycbz3-OLwwq3hIjQwU2EYp0ST99rydMqjcgjkjAwXy3YBzHquKaQgKhPYLO2NYNrCIJn-/exec"; 
@@ -472,17 +471,47 @@
         document.getElementById('pwModalInput').onkeypress = e => { if(e.key==='Enter') submitPw(); };
     }
 
-    function submitPw() {
+   async function submitPw() {
         const pwd = document.getElementById('pwModalInput').value;
-        if (pwd === USER_DB[selectedLoginUser]) {
-            currentUser = selectedLoginUser; 
-            selectedLang = manualLang ? manualLang : selectedLoginGroupLang; 
-            
-            document.getElementById('pwModalOverlay').style.display = 'none';
-            document.getElementById('lockOverlay').style.display = 'none';
-            document.getElementById('topUserBar').style.display = 'flex';
-            applyAppLanguage(); startNewMemo(); refreshList(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-        } else alert("비밀번호가 틀렸습니다.");
+        if(!pwd) return alert("비밀번호를 입력하세요.");
+        
+        // 로그인 버튼(또는 사용자 이름)을 '확인 중...'으로 변경
+        const nameTitle = document.getElementById('pwModalUserName');
+        const originalName = selectedLoginUser;
+        nameTitle.innerText = "확인 중..."; 
+
+        try {
+            // 구글 시트(GAS) 서버에 인증 요청
+            const res = await fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'login', data: { user: selectedLoginUser, password: pwd } })
+            });
+            const result = await res.json();
+
+            if (result.status === "success") {
+                // 인증 성공 시 화면 열기
+                currentUser = selectedLoginUser;
+                selectedLang = manualLang ? manualLang : selectedLoginGroupLang;
+                
+                document.getElementById('pwModalOverlay').style.display = 'none';
+                document.getElementById('lockOverlay').style.display = 'none';
+                document.getElementById('topUserBar').style.display = 'flex';
+                
+                // 로그인 성공 후 초기 세팅 및 동기화 시작
+                applyAppLanguage(); 
+                if(typeof initChatRooms === 'function') initChatRooms(); 
+                if(typeof renderCalendar === 'function') renderCalendar(); 
+                
+                syncData(); // 즉시 동기화 1회
+                setInterval(syncData, 5000); // 5초마다 동기화 시작
+            } else {
+                alert("비밀번호가 틀렸습니다.");
+                nameTitle.innerText = originalName; // 이름 원상복구
+            }
+        } catch(e) { 
+            alert("서버 연결에 실패했습니다."); 
+            nameTitle.innerText = originalName;
+        }
     }
 
     const UI_DICT = {
