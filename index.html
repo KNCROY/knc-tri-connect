@@ -72,7 +72,7 @@
         .chat-room-actions button { background: #fff; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem;}
         .chat-body-container { display: flex; flex: 1; position: relative; overflow: hidden; border: 1px solid var(--border-color); border-radius: 8px;}
         .chat-main-section { display: flex; flex-direction: column; flex: 1; background: var(--chat-bg); }
-        .member-sidebar { position: absolute; right: -250px; top: 0; bottom: 0; width: 200px; background: #fff; border-left: 1px solid var(--border-color); transition: right 0.3s ease; z-index: 10; box-shadow: -2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow-y: auto;}
+        .member-sidebar { position: absolute; right: -250px; top: 0; bottom: 0; width: 200px; background: #fff; border-left: 1px solid var(--border-color); transition: right 0.3s ease; z-index: 50; box-shadow: -2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow-y: auto;}
         .member-sidebar.open { right: 0; }
         .member-sidebar-title { padding: 15px; font-size: 0.9rem; color: var(--accent-color); font-weight: 600; border-bottom: 1px solid var(--border-color); text-align: center; background: #f8fafc;}
         .status-badge { padding: 12px 15px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f8fafc;}
@@ -147,13 +147,26 @@
         #lightboxOverlay img { max-width: 95%; max-height: 90%; object-fit: contain; border-radius: 8px; }
         .lightbox-hint { color: #fff; margin-top: 15px; font-size: 0.9rem; }
 
+        /* 📱 반응형 (모바일) 완벽 수정 */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .content-area { height: calc(100vh - 120px); border-radius: var(--border-radius); border: 1px solid var(--border-color); padding: 15px; }
             .user-bar { flex-wrap: wrap; gap: 10px; justify-content: center; padding: 10px;}
             .nav-buttons { display: flex; width: 100%; gap: 5px; order: 3; justify-content: space-between;}
             .nav-buttons button { flex: 1; padding: 10px 5px; font-size: 0.85rem;}
-            .member-sidebar { display: none; }
+            
+            /* 1. 모바일 개인수첩 상단 버튼 정렬 수정 (1줄 배치) */
+            .top-controls { flex-direction: column; align-items: stretch; gap: 10px; }
+            .left-controls, .center-controls, .right-controls { width: 100%; display: flex; }
+            .left-controls button { width: 100%; }
+            .info-group { width: 100%; box-sizing: border-box; }
+            .right-controls { flex-direction: row; justify-content: space-between; gap: 5px; }
+            .right-controls button { flex: 1; padding: 8px 2px; font-size: 0.85rem; white-space: nowrap; }
+
+            /* 2. 모바일 메신저 팀원 목록 등장 기능 복구 (display:none 삭제) */
+            .member-sidebar { width: 220px; right: -250px; z-index: 50; } /* 기본은 화면 밖으로 숨김 */
+            .member-sidebar.open { right: 0; } /* 버튼 누르면 오른쪽에서 밀려나옴 */
+            
             .chat-room-actions { display: flex; width: 100%; justify-content: space-between; margin-top: 10px;}
             .chat-room-header { flex-direction: column; align-items: stretch; }
             .cal-header button { padding: 5px 10px; }
@@ -354,7 +367,6 @@
     let currentRoomId = 'room_gen'; let chatHistory = JSON.parse(localStorage.getItem('knc_chat_v13')) || []; 
     let events = JSON.parse(localStorage.getItem('knc_cal_v7')) || [];
 
-    // 🟢 실시간 데이터 동기화
     async function syncData() {
         try {
             const res = await fetch(`${GAS_URL}?action=readAll`);
@@ -398,7 +410,7 @@
         document.getElementById('pwModalInput').onkeypress = e => { if(e.key==='Enter') submitPw(); };
     }
 
-    // 🟢 보안 로그인 
+    // 보안 로그인
     async function submitPw() {
         const pwd = document.getElementById('pwModalInput').value;
         if(!pwd) return alert("비밀번호를 입력하세요.");
@@ -420,8 +432,6 @@
                 
                 document.getElementById('pwModalOverlay').style.display = 'none';
                 document.getElementById('lockOverlay').style.display = 'none';
-                
-                // 로그인 성공 시 상단 바와 전역 타이틀 보이기
                 document.getElementById('globalAppTitle').style.display = 'block';
                 document.getElementById('topUserBar').style.display = 'flex';
                 
@@ -437,15 +447,13 @@
         }
     }
 
-    // ⭐️ 3단 메뉴 컨트롤러
+    // 네비게이션 모드 변경
     function setAppMode(mode) {
         appMode = mode;
-        // 뷰 전환
         document.getElementById('memoModeUI').style.display = mode === 'memo' ? 'flex' : 'none';
         document.getElementById('chatModeUI').style.display = mode === 'chat' ? 'flex' : 'none';
         document.getElementById('calendarModeUI').style.display = mode === 'calendar' ? 'flex' : 'none';
 
-        // 네비게이션 버튼 스타일 변경
         ['Memo', 'Chat', 'Cal'].forEach(btn => document.getElementById('navBtn' + btn).classList.remove('active'));
         if(mode === 'memo') document.getElementById('navBtnMemo').classList.add('active');
         if(mode === 'chat') document.getElementById('navBtnChat').classList.add('active');
@@ -458,8 +466,6 @@
 
     function applyAppLanguage() {
         const d = UI_DICT[selectedLang];
-        
-        // 타이틀 및 버튼 변경 적용
         document.getElementById('navBtnMemo').innerText = d.navMemo;
         document.getElementById('navBtnChat').innerText = d.navChat;
         document.getElementById('navBtnCal').innerText = d.navCal;
@@ -494,9 +500,7 @@
     }
     function logout() { setOnlineStatus(false); location.reload(); }
 
-    // ==========================================
-    // 📝 2. 메모장 로직 
-    // ==========================================
+    // 📝 개인수첩 로직 
     let curMemId = null; let currentMemoImages = [];
     function handleImageUpload(e) {
         Array.from(e.target.files).forEach(f => {
@@ -555,9 +559,7 @@
         try { const res = await fetch(`${GAS_URL}?text=${encodeURIComponent(text)}&target=${targetLang}`); const data = await res.json(); document.getElementById('transModalTitle').innerText = `${targetLang.toUpperCase()} Result`; document.getElementById('transResultText').value = data.translatedText; document.getElementById('transModalOverlay').style.display = 'flex'; } catch (e) { alert("번역 에러"); }
     }
 
-    // ==========================================
-    // 💬 3. 메신저 로직
-    // ==========================================
+    // 💬 메신저 로직
     let curChatMedia = null; 
     function toggleMemberList() {
         const sb = document.getElementById('memberSidebar'); const btn = document.getElementById('btnToggleMemberList');
@@ -692,9 +694,7 @@
         localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory)); area.scrollTop = area.scrollHeight;
     }
 
-    // ==========================================
-    // 📅 4. 달력 (단독 뷰 로직)
-    // ==========================================
+    // 📅 달력 단독 로직
     let calSelectedDate = null; 
     let currentDate = new Date();
 
