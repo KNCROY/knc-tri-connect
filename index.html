@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KNC Tri-Connect</title>
+    <title>KNC Tri-Connect APP Ver1.0</title>
     <style>
         /* 🎨 오리지널 클래식 테마 */
         :root {
@@ -12,89 +12,70 @@
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.05); --chat-bg: #b2c7d9; --my-bubble: #ffeb33; --other-bubble: #ffffff;     
         }
         body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-weight: 300; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; letter-spacing: -0.3px; font-size: 14px; }
-        .main-wrapper { max-width: 1000px; width: 100%; transition: all 0.3s ease; }
+        .main-wrapper { max-width: 1000px; width: 100%; transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%;}
+
+        /* 앱 최상단 타이틀 */
+        #globalAppTitle { display: none; text-align: center; font-size: 1.4rem; font-weight: 800; color: var(--accent-color); margin-bottom: 15px; letter-spacing: 0.5px; text-transform: uppercase;}
 
         /* 로그인 모달 */
-        #lockOverlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245, 245, 247, 0.95); z-index: 100; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: flex-start; flex-direction: column; padding: 50px 20px; overflow-y: auto;}
+        #lockOverlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245, 245, 247, 0.98); z-index: 100; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: flex-start; flex-direction: column; padding: 50px 20px; overflow-y: auto;}
         #lockOverlay h3 { color: var(--accent-color); font-size: 1.8rem; margin-bottom: 20px; font-weight: 400; text-align: center;}
-        
         .login-container { display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 400px; margin-bottom: 20px;}
         .login-section { text-align: center; }
         .login-section-title { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;}
         .user-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        .user-btn { padding: 10px 24px; font-size: 0.95rem; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; color: var(--text-main); transition: 0.2s; font-family: inherit; width: 110px;}
+        .user-btn { padding: 10px 24px; font-size: 0.95rem; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; color: var(--text-main); transition: 0.2s; width: 110px;}
         .user-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
-
         #manualLangContainer { display: none; margin-top: 15px; }
         .login-lang-selector { display: flex; justify-content: center; gap: 10px; }
-        .login-lang-selector button { background: transparent; border: 1px solid var(--border-color); padding: 6px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; color: var(--text-main); font-family: inherit;}
-        .login-lang-selector button.active { border-color: var(--accent-color); color: #fff; font-weight: 600; background: var(--accent-color);}
-        .btn-manual-toggle { background: none; border: none; color: #888; text-decoration: underline; cursor: pointer; font-family: inherit; font-size: 0.85rem; margin-top: 30px;}
+        .login-lang-selector button { background: transparent; border: 1px solid var(--border-color); padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 0.85rem;}
+        .login-lang-selector button.active { border-color: var(--accent-color); color: #fff; background: var(--accent-color);}
+        .btn-manual-toggle { background: none; border: none; color: #888; text-decoration: underline; cursor: pointer; font-size: 0.85rem; margin-top: 30px;}
 
-        /* 상단 바 */
+        /* 상단 유저 바 & 네비게이션 3버튼 */
         .user-bar { background: #fff; padding: 12px 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 20px; display: none; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
         .welcome-msg { font-size: 1rem; color: var(--accent-color); font-weight: 600;}
-        .top-right-actions { display: flex; gap: 10px; }
-        button { font-family: inherit; font-weight: 300; outline: none;}
-        .btn-toggle-mode { background: var(--accent-color); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;}
-        .btn-toggle-mode:hover { background: var(--accent-hover); }
+        .nav-buttons { display: flex; gap: 8px; }
+        .nav-btn { background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; font-family: inherit;}
+        .nav-btn:hover { background: var(--bg-color); }
+        .nav-btn.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); font-weight: 600;}
         .btn-logout { background: #fff; border: 1px solid #ffccd0; color: #ef4444; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
 
-        /* ⭐️ 메인 레이아웃: 항상 캘린더가 하단에 고정되도록 분리 */
-        .content-area { display: flex; flex-direction: column; gap: 20px; height: calc(100vh - 140px); min-height: 750px; background: transparent;}
-        .app-main-section { background: var(--surface-color); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden;}
+        /* 메인 컨텐츠 영역 (통합) */
+        .content-area { display: flex; flex-direction: column; background: var(--surface-color); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); height: calc(100vh - 180px); min-height: 600px; box-sizing: border-box; overflow: hidden; position: relative;}
+        .app-mode-view { display: none; flex-direction: column; flex: 1; min-height: 0; }
+        
+        h2.mode-title { text-align: center; color: var(--accent-color); font-size: 1.2rem; font-weight: 600; margin: 0 0 15px 0;}
 
-        /* 사이드바 (메모 목록) */
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2); z-index: 150; }
-        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: #fff; padding: 30px 20px; z-index: 160; transition: left 0.3s ease; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; box-sizing: border-box; }
-        .sidebar.open { left: 0; }
-        .sidebar-close-btn { text-align: right; cursor: pointer; font-size: 20px; border: none; background: none; color: var(--text-sub); margin-bottom: 10px;}
-        .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; margin-bottom: 15px; font-family: inherit; background: var(--bg-color);}
-        .memo-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; }
-        .memo-item { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: 0.1s; border-radius: 6px;}
-        .memo-item:hover { background: var(--bg-color); }
-        .memo-item .date-label { color: var(--accent-color); font-weight: 600; display: block; margin-bottom: 4px; font-size: 0.9rem;}
-
-        /* 메모장 UI */
-        #memoModeUI { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        /* 📝 모드 1: 개인수첩(번역) */
+        #memoModeUI { display: flex; } /* 기본 활성화 */
         .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
-        .left-controls { flex: 1; }
-        .center-controls { flex: 1; display: flex; justify-content: center; }
-        .right-controls { flex: 1; display: flex; justify-content: flex-end; gap: 8px; }
         .info-group { background: var(--bg-color); padding: 8px 16px; border-radius: 20px; color: var(--accent-color); font-size: 0.9rem; text-align: center; border: 1px solid var(--border-color);}
-        button.action-btn { padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; color: var(--text-main); transition: 0.2s;}
+        button.action-btn { padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; transition: 0.2s;}
         button.action-btn:hover { background: var(--bg-color); }
-        .btn-save { background: var(--accent-color); color: #fff; border-color: var(--accent-color);}
+        .btn-save { background: var(--accent-color) !important; color: #fff !important; border-color: var(--accent-color) !important;}
         .btn-delete { color: #ef4444; border-color: #ffccd0; }
-
         .col-header { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; position: relative; min-height: 35px;}
-        .col-header label { font-size: 1.1rem; color: var(--accent-color); font-weight: 600;}
-        .btn-mini-photo { position: absolute; right: 0; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; color: var(--text-main);}
+        .btn-mini-photo { position: absolute; right: 0; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff;}
         .gallery-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
         .gallery-item { position: relative; width: 80px; height: 80px; border-radius: 6px; border: 1px solid var(--border-color); }
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; cursor: zoom-in; }
         .btn-remove-photo { position: absolute; top: -6px; right: -6px; background: #fff; color: #ef4444; border: 1px solid #ffccd0; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; z-index: 5; font-size: 0.7rem;}
-        
-        textarea.memo-ta { flex: 1; width: 100%; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1rem; line-height: 1.6; background: #fafafa; resize: none; outline: none; transition: 0.2s;}
-        textarea.memo-ta:focus { background: #fff; border-color: var(--accent-color); }
+        textarea.memo-ta { flex: 1; width: 100%; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1rem; line-height: 1.6; background: #fafafa; resize: none; outline: none;}
         .translation-actions { display: flex; gap: 10px; margin-top: 10px; }
-        .translation-actions button { flex: 1; padding: 10px; background: #fff; color: var(--accent-color); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer; transition: 0.2s;}
+        .translation-actions button { flex: 1; padding: 10px; background: #fff; color: var(--accent-color); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer;}
 
-        /* 채팅 UI */
-        h2.chat-title { text-align: center; color: var(--accent-color); font-size: 1.2rem; font-weight: 600; margin: 0 0 10px 0;}
-        #chatModeUI { display: none; flex-direction: column; flex: 1; min-height: 0; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #fff;}
-        .chat-room-header { background: #fff; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); gap: 10px;}
+        /* 💬 모드 2: 메신저 */
+        .chat-room-header { background: #fff; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); gap: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px;}
         .chat-room-header select { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); outline: none; flex: 1; font-family: inherit;}
         .chat-room-actions { display: flex; gap: 8px; }
-        .chat-room-actions button { background: #fff; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-family: inherit; font-size: 0.85rem;}
-
-        .chat-body-container { display: flex; flex: 1; position: relative; overflow: hidden; }
+        .chat-room-actions button { background: #fff; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem;}
+        .chat-body-container { display: flex; flex: 1; position: relative; overflow: hidden; border: 1px solid var(--border-color); border-radius: 8px;}
         .chat-main-section { display: flex; flex-direction: column; flex: 1; background: var(--chat-bg); }
         .member-sidebar { position: absolute; right: -250px; top: 0; bottom: 0; width: 200px; background: #fff; border-left: 1px solid var(--border-color); transition: right 0.3s ease; z-index: 10; box-shadow: -2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow-y: auto;}
         .member-sidebar.open { right: 0; }
         .member-sidebar-title { padding: 15px; font-size: 0.9rem; color: var(--accent-color); font-weight: 600; border-bottom: 1px solid var(--border-color); text-align: center; background: #f8fafc;}
         .status-badge { padding: 12px 15px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f8fafc;}
-        
         .chat-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         .msg-row { display: flex; align-items: flex-end; max-width: 85%; position: relative; }
         .msg-row.me { align-self: flex-end; flex-direction: row-reverse; }
@@ -113,7 +94,6 @@
         .msg-sub-box { border-top: 1px solid rgba(0,0,0,0.1); padding-top: 6px; display: flex; flex-direction: column; gap: 4px; }
         .msg-sub { font-size: 0.8rem; color: #555; display: flex; align-items: flex-start; line-height: 1.3;}
         .lang-badge { display: inline-block; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; margin-right: 6px; }
-
         .chat-input-area { flex: 0 0 auto; background: #fff; padding: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column;}
         .chat-preview-box { display: none; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .chat-preview-item { position: relative; border-radius: 6px; border: 1px solid var(--border-color); padding: 5px; background: var(--bg-color); font-size: 0.8rem;}
@@ -122,30 +102,39 @@
         .chat-controls { display: flex; gap: 8px; align-items: flex-end; width: 100%;}
         .btn-square { background: var(--bg-color); border: 1px solid var(--border-color); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0;}
         textarea.chat-ta { flex: 1 1 auto; height: 40px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; box-sizing: border-box;}
-        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 40px; padding: 0 20px; border-radius: 8px; cursor: pointer; flex-shrink: 0; font-family: inherit;}
+        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 40px; padding: 0 20px; border-radius: 8px; cursor: pointer; flex-shrink: 0;}
 
-        /* ⭐️ 캘린더 영역 (하단 고정) */
-        .calendar-wrapper { flex: 0 0 230px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--shadow); padding: 10px 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;}
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.95rem; font-weight: 600;}
-        .cal-header button { background: none; border: none; font-size: 1.1rem; cursor: pointer;}
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr); gap: 4px; flex: 1; min-height: 0; }
-        .cal-day-name { text-align: center; font-size: 0.75rem; color: var(--text-sub); padding-bottom: 2px; }
-        .cal-cell { height: 100%; background: var(--bg-color); border-radius: 4px; border: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 2px 4px; cursor: pointer; position: relative; overflow: hidden; }
-        .cal-date-num { font-size: 0.75rem; color: var(--text-sub); }
-        .cal-today { background: #fff; border: 1px solid var(--accent-color); }
-        .cal-today .cal-date-num { color: var(--accent-color); font-weight: 600;}
-        .cal-event-dot { background: #ef4444; width: 4px; height: 4px; border-radius: 50%; position: absolute; top: 4px; right: 4px; }
-        .cal-event-text { font-size: 0.65rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 1px; padding: 1px 2px;}
+        /* 📅 모드 3: 달력 */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;}
+        .cal-header button { background: none; border: 1px solid var(--border-color); border-radius: 6px; padding: 5px 15px; font-size: 1.1rem; cursor: pointer;}
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr); gap: 6px; flex: 1; min-height: 0; }
+        .cal-day-name { text-align: center; font-size: 0.8rem; color: var(--text-sub); padding-bottom: 5px; font-weight: 600;}
+        .cal-cell { background: var(--bg-color); border-radius: 6px; border: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 4px 6px; cursor: pointer; position: relative; overflow: hidden; transition: 0.1s;}
+        .cal-cell:hover { border-color: var(--accent-color);}
+        .cal-date-num { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 2px;}
+        .cal-today { background: #fff; border: 2px solid var(--accent-color); }
+        .cal-today .cal-date-num { color: var(--accent-color); font-weight: 800;}
+        .cal-event-dot { background: #ef4444; width: 6px; height: 6px; border-radius: 50%; position: absolute; top: 6px; right: 6px; }
+        .cal-event-text { font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; padding: 2px 4px; background: rgba(0,0,0,0.04); border-radius: 4px; color: #333;}
 
-        /* 모달창 */
+        /* 사이드바 & 모달 */
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2); z-index: 150; }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: #fff; padding: 30px 20px; z-index: 160; transition: left 0.3s ease; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; box-sizing: border-box; }
+        .sidebar.open { left: 0; }
+        .sidebar-close-btn { text-align: right; cursor: pointer; font-size: 20px; border: none; background: none; color: var(--text-sub); margin-bottom: 10px;}
+        .search-box input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; margin-bottom: 15px; background: var(--bg-color);}
+        .memo-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1; }
+        .memo-item { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; border-radius: 6px;}
+        .memo-item:hover { background: var(--bg-color); }
+        .memo-item .date-label { color: var(--accent-color); font-weight: 600; display: block; margin-bottom: 4px; font-size: 0.9rem;}
+
         .trans-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
-        .trans-modal { background: #fff; width: 90%; max-width: 400px; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 80vh; display: flex; flex-direction: column;}
-        .trans-modal h3 { margin-top: 0; color: var(--accent-color); font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; font-weight: 600; text-align: center;}
-        .trans-modal input, .trans-modal textarea, .trans-modal select { width: 100%; box-sizing: border-box; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; padding: 10px 12px; font-family: inherit; font-size: 0.95rem; outline: none;}
-        .trans-modal textarea { height: 180px; resize: none; }
+        .trans-modal { background: #fff; width: 90%; max-width: 400px; padding: 20px; border-radius: 12px; display: flex; flex-direction: column;}
+        .trans-modal h3 { margin-top: 0; color: var(--accent-color); font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; font-weight: 600; text-align: center;}
+        .trans-modal input, .trans-modal textarea, .trans-modal select { width: 100%; box-sizing: border-box; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px; padding: 10px; font-family: inherit; font-size: 0.95rem; outline: none;}
+        .trans-modal textarea { height: 150px; resize: none; }
         .trans-modal-btns { display: flex; justify-content: center; gap: 10px;}
-        .trans-modal-btns button { flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; border: 1px solid var(--border-color); background: #fff;}
-        .trans-modal-btns .btn-save { background: var(--accent-color); color: #fff; border-color: var(--accent-color);}
+        .trans-modal-btns button { flex: 1; padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color); background: #fff;}
 
         #calModalEventList { flex: 1 1 auto; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px;}
         .cal-modal-item { background: var(--bg-color); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 0.9rem;}
@@ -159,14 +148,15 @@
         .lightbox-hint { color: #fff; margin-top: 15px; font-size: 0.9rem; }
 
         @media (max-width: 768px) {
-            .content-area { height: auto; min-height: 100vh; border-radius: 0; border: none; padding: 10px; background: var(--bg-color);}
-            .app-main-section { height: 60vh; }
-            .calendar-wrapper { height: auto; min-height: 250px; }
+            body { padding: 10px; }
+            .content-area { height: calc(100vh - 120px); border-radius: var(--border-radius); border: 1px solid var(--border-color); padding: 15px; }
+            .user-bar { flex-wrap: wrap; gap: 10px; justify-content: center; padding: 10px;}
+            .nav-buttons { display: flex; width: 100%; gap: 5px; order: 3; justify-content: space-between;}
+            .nav-buttons button { flex: 1; padding: 10px 5px; font-size: 0.85rem;}
             .member-sidebar { display: none; }
-            .top-controls { flex-direction: column; align-items: stretch; gap: 15px;}
-            .right-controls { flex-direction: row; width: 100%; }
-            .right-controls button { flex: 1; }
-            .chat-room-actions { width: 100%; display: flex; justify-content: space-between; margin-top: 10px;}
+            .chat-room-actions { display: flex; width: 100%; justify-content: space-between; margin-top: 10px;}
+            .chat-room-header { flex-direction: column; align-items: stretch; }
+            .cal-header button { padding: 5px 10px; }
         }
     </style>
 </head>
@@ -237,8 +227,10 @@
 </div>
 
 <div class="main-wrapper">
+    <div id="globalAppTitle">KNC Tri-Connect APP Ver1.0</div>
+
     <div id="lockOverlay">
-        <h3 id="ui_lockTitle">KNC Tri-Connect</h3>
+        <h3 id="ui_lockTitle">KNC Tri-Connect APP Ver1.0</h3>
         <div class="login-container">
             <div class="login-section"><div class="login-section-title">Korea (Auto KR)</div><div class="user-grid" id="grid_ko"></div></div>
             <div class="login-section"><div class="login-section-title">Vietnam (Auto VN)</div><div class="user-grid" id="grid_vi"></div></div>
@@ -256,69 +248,69 @@
 
     <div class="user-bar" id="topUserBar">
         <div class="welcome-msg" id="welcomeMsg"></div>
-        <div class="top-right-actions">
-            <button class="btn-toggle-mode" id="btnToggleMode" onclick="toggleAppMode()">메신저 열기</button>
-            <button class="btn-logout" id="ui_btnLogout" onclick="logout()">로그아웃</button>
+        <div class="nav-buttons">
+            <button class="nav-btn active" id="navBtnMemo" onclick="setAppMode('memo')">개인수첩(번역)</button>
+            <button class="nav-btn" id="navBtnChat" onclick="setAppMode('chat')">메신저</button>
+            <button class="nav-btn" id="navBtnCal" onclick="setAppMode('calendar')">달력</button>
         </div>
+        <button class="btn-logout" id="ui_btnLogout" onclick="logout()">로그아웃</button>
     </div>
 
     <div class="content-area">
-        <div class="app-main-section">
-            
-            <div id="memoModeUI">
-                <div class="top-controls">
-                    <div class="left-controls"><button class="action-btn" id="ui_btnList" onclick="toggleSidebar()">목록 열기</button></div>
-                    <div class="center-controls"><div class="info-group" id="ui_dateGroup">새 업무 기록 작성 중...</div></div>
-                    <div class="right-controls">
-                        <button class="action-btn" id="ui_btnNew" onclick="startNewMemo()">새 기록</button>
-                        <button class="action-btn btn-save" id="ui_btnSave" onclick="saveMemo()">저장</button>
-                        <button class="action-btn btn-delete" id="ui_btnDelete" onclick="deleteMemo()">삭제</button>
-                    </div>
-                </div>
-                <div class="col-header">
-                    <label id="ui_memoLabel">업무 기록</label>
-                    <button class="btn-mini-photo" id="ui_btnPhoto" onclick="document.getElementById('photoInput').click()">사진 첨부</button>
-                    <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event)">
-                </div>
-                <div class="gallery-container" id="photoGallery"></div>
-                <textarea id="mainText" class="memo-ta" placeholder="현장 업무 내용을 상세히 기록하세요..."></textarea>
-                <div class="translation-actions" id="translationActions"></div>
-            </div>
-
-            <div id="chatModeUI">
-                <h2 class="chat-title" id="ui_chatTitle">KNC Tri-Connect</h2>
-                <div class="chat-room-header">
-                    <select id="chatRoomSelect" onchange="changeChatRoom()"></select>
-                    <div class="chat-room-actions">
-                        <button id="btnToggleMemberList" onclick="toggleMemberList()">팀원 목록</button>
-                        <button id="ui_btnCreateRoom" onclick="openCreateRoomModal()">방생성(+초대)</button>
-                    </div>
-                </div>
-                <div class="chat-body-container">
-                    <div class="chat-main-section">
-                        <div class="chat-area" id="chatArea"></div>
-                        <div class="chat-input-area">
-                            <div class="chat-preview-box" id="chatPreviewBox"></div>
-                            <div class="chat-controls">
-                                <button class="btn-square" onclick="document.getElementById('chatPhotoInput').click()">📷</button>
-                                <button class="btn-square" onclick="document.getElementById('chatFileInput').click()">📎</button>
-                                <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatMedia(event, 'image')">
-                                <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="handleChatMedia(event, 'file')">
-                                <textarea id="chatInput" class="chat-ta" placeholder="메시지 입력..."></textarea>
-                                <button class="btn-send" id="ui_btnSend" onclick="sendChatMessage()">전송</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="member-sidebar" id="memberSidebar">
-                        <div class="member-sidebar-title">접속 상태 & 1:1 채팅</div>
-                        <div id="onlineStatusBox"></div>
-                    </div>
+        
+        <div id="memoModeUI" class="app-mode-view">
+            <h2 class="mode-title" id="ui_memoLabel">개인수첩(번역)</h2>
+            <div class="top-controls">
+                <div class="left-controls"><button class="action-btn" id="ui_btnList" onclick="toggleSidebar()">목록 열기</button></div>
+                <div class="center-controls"><div class="info-group" id="ui_dateGroup">새 업무 기록 작성 중...</div></div>
+                <div class="right-controls">
+                    <button class="action-btn" id="ui_btnNew" onclick="startNewMemo()">새 기록</button>
+                    <button class="action-btn btn-save" id="ui_btnSave" onclick="saveMemo()">저장</button>
+                    <button class="action-btn btn-delete" id="ui_btnDelete" onclick="deleteMemo()">삭제</button>
                 </div>
             </div>
-            
+            <div class="col-header">
+                <button class="btn-mini-photo" id="ui_btnPhoto" onclick="document.getElementById('photoInput').click()">사진 첨부</button>
+                <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event)">
+            </div>
+            <div class="gallery-container" id="photoGallery"></div>
+            <textarea id="mainText" class="memo-ta" placeholder="현장 업무 내용을 상세히 기록하세요..."></textarea>
+            <div class="translation-actions" id="translationActions"></div>
         </div>
 
-        <div class="calendar-wrapper">
+        <div id="chatModeUI" class="app-mode-view">
+            <h2 class="mode-title" id="ui_chatTitle">KNC Messenger</h2>
+            <div class="chat-room-header">
+                <select id="chatRoomSelect" onchange="changeChatRoom()"></select>
+                <div class="chat-room-actions">
+                    <button id="btnToggleMemberList" onclick="toggleMemberList()">팀원 목록</button>
+                    <button id="ui_btnCreateRoom" onclick="openCreateRoomModal()">방생성(+초대)</button>
+                </div>
+            </div>
+            <div class="chat-body-container">
+                <div class="chat-main-section">
+                    <div class="chat-area" id="chatArea"></div>
+                    <div class="chat-input-area">
+                        <div class="chat-preview-box" id="chatPreviewBox"></div>
+                        <div class="chat-controls">
+                            <button class="btn-square" onclick="document.getElementById('chatPhotoInput').click()">📷</button>
+                            <button class="btn-square" onclick="document.getElementById('chatFileInput').click()">📎</button>
+                            <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleChatMedia(event, 'image')">
+                            <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="handleChatMedia(event, 'file')">
+                            <textarea id="chatInput" class="chat-ta" placeholder="메시지 입력..."></textarea>
+                            <button class="btn-send" id="ui_btnSend" onclick="sendChatMessage()">전송</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="member-sidebar" id="memberSidebar">
+                    <div class="member-sidebar-title">접속 상태 & 1:1 채팅</div>
+                    <div id="onlineStatusBox"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="calendarModeUI" class="app-mode-view">
+            <h2 class="mode-title" id="ui_calTitle">KNC Calendar</h2>
             <div class="cal-header">
                 <button onclick="changeMonth(-1)">◀</button>
                 <span id="calMonthDisplay">2026년 5월</span>
@@ -326,6 +318,7 @@
             </div>
             <div class="cal-grid" id="calGrid"></div>
         </div>
+        
     </div>
 </div>
 
@@ -333,15 +326,24 @@
     if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
     const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-    // ⭐️ 최신 구글 서버 주소 적용
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx-4Pn9mzu_pexmqdPKzR9Mg8wM9tohY0vp7vK8K_HGRPO5jGCukyzYSjKLqpdaM7sM/exec"; 
+    // ⭐️ 최신 구글 서버 연동 URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxREd-loZ_nIJwXrSO7toaUey_x4b-IgT6YFEiDVIO_HGpZkLttWxF_d2Z38ZUZHJz8/exec"; 
 
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     const UI_DICT = {
-        ko: { list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", memoLabel: "업무 기록", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMsg: "메신저 열기", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "메시지 입력...", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후" },
-        vi: { list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", memoLabel: "Ghi chú", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMsg: "Mở Messenger", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Nhập tin nhắn...", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều" },
-        en: { list: "List", new: "New", save: "Save", del: "Delete", memoLabel: "Work Memo", photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMsg: "Open Messenger", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Message...", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM" }
+        ko: { list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", 
+              navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력",
+              titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar",
+              photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "메시지 입력...", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후" },
+        vi: { list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", 
+              navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch",
+              titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar",
+              photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Nhập tin nhắn...", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều" },
+        en: { list: "List", new: "New", save: "Save", del: "Delete", 
+              navMemo: "Memo(Trans)", navChat: "Messenger", navCal: "Calendar",
+              titleMemo: "Personal Memo", titleChat: "KNC Messenger", titleCal: "KNC Calendar",
+              photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Message...", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM" }
     };
 
     let currentUser = null; let selectedLang = 'ko'; let appMode = 'memo'; 
@@ -364,7 +366,7 @@
                 localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
                 localStorage.setItem('knc_cal_v7', JSON.stringify(events));
                 if(appMode === 'chat') renderChatUI();
-                renderCalendar();
+                if(appMode === 'calendar') renderCalendar();
                 if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents();
             }
         } catch(e) { console.log("서버 확인 중..."); }
@@ -396,18 +398,15 @@
         document.getElementById('pwModalInput').onkeypress = e => { if(e.key==='Enter') submitPw(); };
     }
 
-    // 🟢 구글 시트 users 탭 연동 보안 로그인 (완벽 버전)
+    // 🟢 보안 로그인 
     async function submitPw() {
         const pwd = document.getElementById('pwModalInput').value;
         if(!pwd) return alert("비밀번호를 입력하세요.");
         
         const btn = document.getElementById('btnSubmitPw');
-        const nameTitle = document.getElementById('pwModalUserName');
         btn.innerText = "확인 중..."; btn.disabled = true;
-        nameTitle.innerText = "확인 중...";
 
         try {
-            // 보안 차단을 피하기 위해 headers 없이 텍스트 형태로 요청
             const res = await fetch(GAS_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: 'login', data: { user: selectedLoginUser, password: pwd } })
@@ -421,30 +420,57 @@
                 
                 document.getElementById('pwModalOverlay').style.display = 'none';
                 document.getElementById('lockOverlay').style.display = 'none';
+                
+                // 로그인 성공 시 상단 바와 전역 타이틀 보이기
+                document.getElementById('globalAppTitle').style.display = 'block';
                 document.getElementById('topUserBar').style.display = 'flex';
                 
                 applyAppLanguage(); startNewMemo(); refreshList(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-                syncData();
-                setInterval(syncData, 5000);
+                syncData(); setInterval(syncData, 5000);
             } else {
                 alert("비밀번호가 틀렸습니다. 다시 확인해 주세요.");
-                nameTitle.innerText = selectedLoginUser;
             }
         } catch(e) { 
             alert("서버 통신 실패. 인터넷 연결이나 GAS 설정을 확인하세요.");
-            nameTitle.innerText = selectedLoginUser;
         } finally {
             btn.innerText = "확인"; btn.disabled = false;
         }
     }
 
+    // ⭐️ 3단 메뉴 컨트롤러
+    function setAppMode(mode) {
+        appMode = mode;
+        // 뷰 전환
+        document.getElementById('memoModeUI').style.display = mode === 'memo' ? 'flex' : 'none';
+        document.getElementById('chatModeUI').style.display = mode === 'chat' ? 'flex' : 'none';
+        document.getElementById('calendarModeUI').style.display = mode === 'calendar' ? 'flex' : 'none';
+
+        // 네비게이션 버튼 스타일 변경
+        ['Memo', 'Chat', 'Cal'].forEach(btn => document.getElementById('navBtn' + btn).classList.remove('active'));
+        if(mode === 'memo') document.getElementById('navBtnMemo').classList.add('active');
+        if(mode === 'chat') document.getElementById('navBtnChat').classList.add('active');
+        if(mode === 'calendar') document.getElementById('navBtnCal').classList.add('active');
+
+        applyAppLanguage();
+        if(mode === 'chat') { renderChatUI(); setTimeout(()=> {document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight}, 50); }
+        if(mode === 'calendar') { renderCalendar(); }
+    }
+
     function applyAppLanguage() {
         const d = UI_DICT[selectedLang];
+        
+        // 타이틀 및 버튼 변경 적용
+        document.getElementById('navBtnMemo').innerText = d.navMemo;
+        document.getElementById('navBtnChat').innerText = d.navChat;
+        document.getElementById('navBtnCal').innerText = d.navCal;
+        document.getElementById('ui_memoLabel').innerText = d.titleMemo;
+        document.getElementById('ui_chatTitle').innerText = d.titleChat;
+        document.getElementById('ui_calTitle').innerText = d.titleCal;
+
         document.getElementById('ui_btnList').innerText = d.list;
         document.getElementById('ui_btnNew').innerText = d.new;
         document.getElementById('ui_btnSave').innerText = d.save;
         document.getElementById('ui_btnDelete').innerText = d.del;
-        document.getElementById('ui_memoLabel').innerText = d.memoLabel;
         document.getElementById('ui_btnPhoto').innerText = d.photo;
         document.getElementById('ui_btnLogout').innerText = selectedLang === 'ko' ? "로그아웃" : "Logout";
         document.getElementById('welcomeMsg').innerText = `${currentUser} (${LANG_NAMES[selectedLang]})`;
@@ -458,7 +484,6 @@
 
         const sb = document.getElementById('memberSidebar');
         if(appMode === 'chat') document.getElementById('btnToggleMemberList').innerText = sb.classList.contains('open') ? d.btnCloseMem : d.btnMem;
-        document.getElementById('btnToggleMode').innerText = appMode === 'memo' ? d.btnMsg : (selectedLang === 'ko' ? "메모장 전환" : "Back to Memo");
         renderTranslationButtons();
     }
 
@@ -468,13 +493,6 @@
         onlineDB[currentUser] = isOnline; localStorage.setItem('knc_online_v6', JSON.stringify(onlineDB)); renderOnlineStatus();
     }
     function logout() { setOnlineStatus(false); location.reload(); }
-
-    function toggleAppMode() {
-        appMode = (appMode === 'memo') ? 'chat' : 'memo';
-        document.getElementById('memoModeUI').style.display = appMode === 'memo' ? 'flex' : 'none';
-        document.getElementById('chatModeUI').style.display = appMode === 'chat' ? 'flex' : 'none';
-        applyAppLanguage(); if(appMode==='chat') { renderChatUI(); setTimeout(()=> {document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight}, 50); }
-    }
 
     // ==========================================
     // 📝 2. 메모장 로직 
@@ -675,7 +693,7 @@
     }
 
     // ==========================================
-    // 📅 4. 달력 로직 (하단 고정형)
+    // 📅 4. 달력 (단독 뷰 로직)
     // ==========================================
     let calSelectedDate = null; 
     let currentDate = new Date();
@@ -693,12 +711,12 @@
             const dayEvents = events.filter(e => e.date === dateStr);
             
             let eventHTML = '';
-            dayEvents.slice(0, 2).forEach(e => { 
+            dayEvents.slice(0, 3).forEach(e => { 
                 const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll');
                 const tLabel = UI_DICT[selectedLang][tKey] || '종일';
                 eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.text}</div>`; 
             });
-            if(dayEvents.length > 2) { eventHTML += `<div class="cal-event-more">+${dayEvents.length - 2} 더보기</div>`; }
+            if(dayEvents.length > 3) { eventHTML += `<div class="cal-event-text" style="text-align:center; color:#888;">+${dayEvents.length - 3} 더보기</div>`; }
             if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
 
             grid.innerHTML += `<div class="cal-cell ${isToday}" onclick="openCalModal('${dateStr}')"><div class="cal-date-num">${day}</div>${eventHTML}</div>`;
@@ -746,6 +764,7 @@
         const newText = prompt("일정을 수정하세요:", evt.text);
         if(newText && newText.trim() !== '') {
             evt.text = newText.trim(); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
             renderCalModalEvents(); renderCalendar();
         }
     }
@@ -754,8 +773,8 @@
     window.addEventListener('storage', (e) => {
         if (e.key === 'knc_online_v6') renderOnlineStatus();
         if (e.key === 'knc_rooms_v13') { chatRooms = JSON.parse(e.newValue || '[]'); initChatRooms(); }
-        if (e.key === 'knc_cal_v7') { events = JSON.parse(e.newValue || '[]'); renderCalendar(); if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents(); }
-        if (e.key === 'knc_chat_v13') { const oldData = JSON.parse(e.oldValue || '[]'); const newData = JSON.parse(e.newValue || '[]'); chatHistory = newData; if (newData.length > oldData.length) { const latestMsg = newData[newData.length - 1]; if (latestMsg.sender !== currentUser && latestMsg.roomId === currentRoomId) { alertSound.play().catch(err => {}); if (Notification.permission === "granted") new Notification(`Messenger - ${latestMsg.sender}`, { body: latestMsg.original }); } } renderChatUI(); }
+        if (e.key === 'knc_cal_v7') { events = JSON.parse(e.newValue || '[]'); if(appMode === 'calendar') renderCalendar(); if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents(); }
+        if (e.key === 'knc_chat_v13') { const oldData = JSON.parse(e.oldValue || '[]'); const newData = JSON.parse(e.newValue || '[]'); chatHistory = newData; if (newData.length > oldData.length) { const latestMsg = newData[newData.length - 1]; if (latestMsg.sender !== currentUser && latestMsg.roomId === currentRoomId) { alertSound.play().catch(err => {}); if (Notification.permission === "granted") new Notification(`Messenger - ${latestMsg.sender}`, { body: latestMsg.original }); } } if(appMode === 'chat') renderChatUI(); }
     });
     document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
     document.getElementById('newCalEventInput').addEventListener('keypress', e => { if(e.key==='Enter') { e.preventDefault(); addNewEvent(); } });
