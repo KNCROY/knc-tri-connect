@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KNC Tri-Connect APP Ver1.0</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" href="logo.png">
+    <meta name="theme-color" content="#1c2833">
+    
     <style>
         /* 🎨 기본 테마 및 레이아웃 */
         :root {
@@ -99,6 +104,7 @@
         .msg-sub { font-size: 0.8rem; color: #555; display: flex; align-items: flex-start; line-height: 1.3;}
         .lang-badge { display: inline-block; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; margin-right: 6px; }
         
+        /* 인용(답장) 관련 스타일 */
         .quote-block { font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 6px 10px; border-left: 3px solid var(--accent-color); margin-bottom: 6px; border-radius: 4px; color: #555;}
         .quote-sender { font-weight: 600; margin-bottom: 2px; color: var(--accent-color);}
 
@@ -278,6 +284,7 @@
     </div>
 
     <div class="content-area">
+        
         <div id="memoModeUI" class="app-mode-view">
             <h2 class="mode-title" id="ui_memoLabel">개인수첩(번역)</h2>
             <div class="top-controls">
@@ -287,7 +294,7 @@
             </div>
             <div class="col-header"><button class="btn-mini-photo" id="ui_btnPhoto" onclick="document.getElementById('photoInput').click()">사진 첨부</button><input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event, 'memo')"></div>
             <div class="gallery-container" id="photoGallery"></div>
-            <textarea id="mainText" class="memo-ta" placeholder="현장 업무 내용을 상세히 기록하세요..."></textarea>
+            <textarea id="mainText" class="memo-ta" placeholder="현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)"></textarea>
             <div class="translation-actions" id="translationActions"></div>
         </div>
 
@@ -340,14 +347,15 @@
 
     let currentUser = null, selectedLang = 'ko', appMode = 'memo', manualLang = null, selectedLoginUser = '', selectedLoginGroupLang = '';
     let hasUnreadChat = false, replyTarget = null;
-    let actionMsgTarget = null; // 메시지 액션 타겟
-    let editCalId = null; // 달력 수정 타겟
+    let actionMsgTarget = null; // ⭐️ 메시지 액션 타겟
+    let editCalId = null; // ⭐️ 달력 수정 타겟
+    let isInitialChatSync = true; // ⭐️ 가짜 NEW 알림 방지용 장치
     
     const allUsers = [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en];
     let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
     let currentRoomId = 'room_gen', chatHistory = [], events = [], memos = []; 
 
-    // 🟢 [가장 중요한 동기화 엔진] PC/모바일 무결점 연동 및 복구
+    // 🟢 [가장 중요한 동기화 엔진] PC/모바일 무결점 연동
     async function syncData() {
         if(!currentUser) return;
         try {
@@ -389,7 +397,12 @@
                     const currentIds = new Set(chatHistory.map(c => c.id));
                     const newServerChats = result.chats.filter(c => !currentIds.has(c.id)); 
                     const hasNewFromOthers = newServerChats.some(c => c.sender !== currentUser);
-                    if (hasNewFromOthers && appMode !== 'chat') { hasUnreadChat = true; alertSound.play().catch(e=>{}); }
+                    
+                    // ⭐️ 방금 로그인해서 최초로 가져올 때는 알림/뱃지 안 울리게 막음
+                    if (!isInitialChatSync && hasNewFromOthers && appMode !== 'chat') { 
+                        hasUnreadChat = true; 
+                        alertSound.play().catch(e=>{}); 
+                    }
 
                     const localOnly = chatHistory.filter(c => !new Set(result.chats.map(x=>x.id)).has(c.id));
                     chatHistory = [...result.chats, ...localOnly].sort((a, b) => a.id - b.id);
@@ -403,6 +416,7 @@
                     localStorage.setItem('knc_cal_v7', JSON.stringify(events));
                 }
 
+                isInitialChatSync = false; // 첫 동기화 끝났으니 장치 해제
                 applyAppLanguage(); renderOnlineStatus(); 
                 if(appMode === 'chat') renderChatUI(false); 
                 if(appMode === 'calendar') renderCalendar();
@@ -430,7 +444,7 @@
             document.getElementById('globalAppTitle').style.display = 'block';
             document.getElementById('topUserBar').style.display = 'flex';
             applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-            migrateLocalMemos(); pingOnline(); setInterval(pingOnline, 30000); syncData(); setInterval(syncData, 5000);
+            pingOnline(); setInterval(pingOnline, 30000); syncData(); setInterval(syncData, 5000);
         } else { initLoginScreen(); }
     };
 
@@ -446,17 +460,12 @@
                 document.getElementById('pwModalOverlay').style.display = 'none'; document.getElementById('lockOverlay').style.display = 'none';
                 document.getElementById('globalAppTitle').style.display = 'block'; document.getElementById('topUserBar').style.display = 'flex';
                 applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-                migrateLocalMemos(); pingOnline(); setInterval(pingOnline, 30000); syncData(); setInterval(syncData, 5000);
+                pingOnline(); setInterval(pingOnline, 30000); syncData(); setInterval(syncData, 5000);
             } else { alert("비밀번호가 틀렸습니다. 다시 확인해 주세요."); }
         } catch(e) { alert("서버 연결 실패. GAS URL을 확인하세요."); } finally { btn.innerText = "확인"; btn.disabled = false; }
     }
 
     function logout() { setOnlineStatus(false); localStorage.removeItem('knc_auto_login_user'); localStorage.removeItem('knc_auto_login_lang'); location.reload(); }
-
-    async function migrateLocalMemos() {
-        const localKeys = Object.keys(localStorage).filter(k => k.startsWith(`m_${currentUser}_`));
-        for(let k of localKeys) { const mData = JSON.parse(localStorage.getItem(k)); await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: mData }) }).catch(e=>{}); localStorage.removeItem(k); }
-    }
 
     function setAppMode(mode) {
         appMode = mode;
@@ -503,7 +512,7 @@
     function setOnlineStatus(isOnline) { if (!currentUser) return; let onlineDB = JSON.parse(localStorage.getItem('knc_online_v6')) || {}; onlineDB[currentUser] = isOnline; localStorage.setItem('knc_online_v6', JSON.stringify(onlineDB)); renderOnlineStatus(); }
 
     /* -------------------------------------------------------------------------- */
-    /* ⭐️ [공통] 이미지 강제 압축 처리 함수 (용량 오류 원천 차단)                   */
+    /* ⭐️ [공통] 용량 제한 방어 및 이미지 압축 시스템                                */
     /* -------------------------------------------------------------------------- */
     function processAndCompressImage(fileOrBlob, callback) {
         const r = new FileReader();
@@ -512,39 +521,31 @@
             img.onload = () => {
                 const cvs = document.createElement('canvas');
                 let w = img.width, h = img.height;
-                // 최대 가로 크기를 800px로 제한하여 용량 대폭 감소
-                if (w > 800) { h *= 800 / w; w = 800; }
+                // ⭐️ 용량 제한 초과 방지를 위해 640px 이하로 강력 압축 (카카오톡 일반화질)
+                if (w > 640) { h *= 640 / w; w = 640; }
                 cvs.width = w; cvs.height = h;
                 cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                // 카카오톡 일반화질 수준(0.6)으로 압축하여 구글 시트 용량 이내로 최적화
-                callback(cvs.toDataURL('image/jpeg', 0.6));
+                callback(cvs.toDataURL('image/jpeg', 0.5));
             };
             img.src = ev.target.result;
         };
         r.readAsDataURL(fileOrBlob);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /* ⭐️ [공통] Ctrl+V 이미지 붙여넣기 인식 시스템                                */
-    /* -------------------------------------------------------------------------- */
     function handlePasteEvent(e, targetType) {
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (let item of items) {
             if (item.type.indexOf('image') === 0) {
-                e.preventDefault(); // 기본 글자 붙여넣기 방지
+                e.preventDefault(); 
                 const blob = item.getAsFile();
                 processAndCompressImage(blob, base64 => {
-                    if (targetType === 'memo') {
-                        currentMemoImages.push(base64); renderGallery();
-                    } else if (targetType === 'chat') {
-                        curChatMedia = { type: 'image', data: base64 }; showChatMediaPreview();
-                    }
+                    if (targetType === 'memo') { currentMemoImages.push(base64); renderGallery(); } 
+                    else if (targetType === 'chat') { curChatMedia = { type: 'image', data: base64 }; showChatMediaPreview(); }
                 });
-                break; // 이미지 하나만 처리
+                break; 
             }
         }
     }
-    // 메모장과 메신저 텍스트 입력창에 붙여넣기 감지기 설치
     document.getElementById('mainText').addEventListener('paste', e => handlePasteEvent(e, 'memo'));
     document.getElementById('chatInput').addEventListener('paste', e => handlePasteEvent(e, 'chat'));
 
@@ -557,7 +558,7 @@
         const files = Array.from(e.target.files);
         if(!files.length) return;
         files.forEach(f => {
-            if (f.size > 5 * 1024 * 1024) return alert("너무 큰 파일입니다. 5MB 이하를 권장합니다."); // 1차 거름망
+            if (f.size > 5 * 1024 * 1024) return alert("너무 큰 파일입니다. 5MB 이하를 권장합니다.");
             processAndCompressImage(f, base64 => {
                 if(targetType === 'memo') { currentMemoImages.push(base64); renderGallery(); }
                 else if (targetType === 'chat') { curChatMedia = { type: 'image', data: base64 }; showChatMediaPreview(); }
@@ -576,12 +577,24 @@
         const d = new Date(parseInt(curMemId)); const dS = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; const tS = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
         const memoData = {id:curMemId, date:dS, time:tS, text:val, images:currentMemoImages, user:currentUser};
         
+        // ⭐️ 용량 제한 사전 차단 로직 (구글 시트 5만자 한계 방어)
+        const payloadString = JSON.stringify(memoData);
+        if (payloadString.length > 48000) {
+            alert("⚠️ 데이터 용량 한계(약 5만자)를 초과하여 저장할 수 없습니다.\n사진을 지우거나 메모를 두 개로 나누어 저장해 주십시오.");
+            return;
+        }
+
         const idx = memos.findIndex(m => m.id === curMemId);
         if(idx > -1) memos[idx] = memoData; else memos.unshift(memoData);
         
         document.getElementById('ui_dateGroup').innerText = `${dS} ${tS}`; 
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: memoData }) }).catch(e=>{});
-        alert("저장되었습니다!"); refreshList(); 
+        
+        try {
+            await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: memoData }) });
+            alert("저장되었습니다!"); refreshList(); 
+        } catch(e) {
+            alert("인터넷 연결이 원활하지 않아 서버 저장에 실패했습니다.");
+        }
     }
     
     function loadDataById(id) { const d = memos.find(m => m.id === id); if(d) { curMemId = d.id; document.getElementById('mainText').value = d.text || ""; currentMemoImages = d.images || []; renderGallery(); document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; } }
@@ -680,7 +693,7 @@
         closeCreateRoomModal(); initChatRooms(); renderOnlineStatus(); renderChatUI(true);
     }
 
-    // 파일 첨부 (일반 첨부파일용)
+    // 일반 첨부파일 로직 (pdf, doc 등)
     function handleChatMedia(e, type) {
         const f = e.target.files[0]; if(!f) return;
         if (f.size > 2 * 1024 * 1024) return alert(selectedLang==='ko'?"2MB 이하의 파일만 첨부 가능합니다.":"Only files under 2MB are allowed.");
@@ -700,14 +713,19 @@
     function insertEmoji(emoji) { const ta = document.getElementById('chatInput'); ta.value += emoji; ta.focus(); }
 
     /* -------------------------------------------------------------------------- */
-    /* ⭐️ 메시지 클릭 -> 액션 모달창 (답장 / 삭제) 로직                            */
+    /* ⭐️ 메시지 클릭 -> 액션 모달창 (ID 기반으로 변경하여 깨짐 원천차단)           */
     /* -------------------------------------------------------------------------- */
-    function openMsgAction(id, sender, text) {
-        actionMsgTarget = {id: id, sender: sender, text: text};
-        document.getElementById('msgActionSender').innerText = sender;
-        document.getElementById('msgActionPreview').innerText = text.substring(0,25) + (text.length>25?"...":"");
-        // 삭제 버튼은 내가 쓴 글일 때만 보여줌
-        document.getElementById('btnMsgDelete').style.display = (sender === currentUser) ? 'block' : 'none';
+    function openMsgAction(id) {
+        const targetMsg = chatHistory.find(m => m.id === id);
+        if (!targetMsg) return;
+        
+        actionMsgTarget = {id: targetMsg.id, sender: targetMsg.sender, text: targetMsg.original};
+        document.getElementById('msgActionSender').innerText = targetMsg.sender;
+        
+        let previewText = targetMsg.original || "(사진/파일)";
+        document.getElementById('msgActionPreview').innerText = previewText.substring(0,25) + (previewText.length>25?"...":"");
+        
+        document.getElementById('btnMsgDelete').style.display = (targetMsg.sender === currentUser) ? 'block' : 'none';
         document.getElementById('msgActionModalOverlay').style.display = 'flex';
     }
 
@@ -725,7 +743,6 @@
             const targetId = actionMsgTarget.id;
             const targetMsg = chatHistory.find(m => m.id === targetId);
             if (targetMsg) {
-                // 메시지를 아예 없애지 않고 '삭제된 메시지'로 처리하여 동기화
                 targetMsg.original = "🚫 삭제된 메시지입니다.";
                 targetMsg.ko = targetMsg.vi = targetMsg.en = "";
                 targetMsg.media = null;
@@ -785,7 +802,6 @@
             const mainL = selectedLang; const subs = ['ko', 'vi', 'en'].filter(l => l !== mainL);
             let transH = "", mainH = "";
             
-            // 삭제된 메시지 처리
             if (m.status === 'deleted') {
                 mainH = `<div class="msg-main" style="color:#aaa; font-style:italic;">${m.original}</div>`;
             } else if (m.original) {
@@ -808,9 +824,8 @@
             const unreadCnt = curRoom.members.length - m.readBy.length;
             const metaHTML = `<div class="msg-meta">${unreadCnt > 0 ? `<span class="unread-cnt">${unreadCnt}</span>` : ''}</div>`;
             
-            // ⭐️ 클릭 시 액션 모달 오픈
-            const cleanText = (m.original || "").replace(/'/g, "\\'");
-            const bubbleHTML = `<div class="msg-content-wrapper">${!isMe ? `<div class="sender-name">${m.sender}</div>` : ''}<div class="bubble" onclick="openMsgAction('${m.id}', '${m.sender}', '${cleanText}')">${replyH}${mediaH}${mainH}${transH}</div></div>`;
+            // ⭐️ 말풍선 클릭 시 이제 ID만 넘김 (글자가 아무리 길어도 안 깨짐)
+            const bubbleHTML = `<div class="msg-content-wrapper">${!isMe ? `<div class="sender-name">${m.sender}</div>` : ''}<div class="bubble" onclick="openMsgAction('${m.id}')">${replyH}${mediaH}${mainH}${transH}</div></div>`;
             
             row.innerHTML = isMe ? `${metaHTML}${bubbleHTML}` : `${bubbleHTML}${metaHTML}`;
             area.appendChild(row);
@@ -869,7 +884,6 @@
         dayEvents.forEach(e => {
             const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll');
             const tLabel = UI_DICT[selectedLang][tKey] || '종일';
-            // ⭐️ 달력 모달의 수정 버튼 클릭 연결
             list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="openEditEventModal('${e.id}')">수정</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">삭제</button></div></div>`;
         });
     }
