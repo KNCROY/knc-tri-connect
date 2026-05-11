@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KNC Tri-Connect APP Ver1.0</title>
     <style>
+        /* 🎨 오리지널 클래식 테마 */
         :root {
             --bg-color: #f5f5f7; --surface-color: #ffffff; --text-main: #1a1a1a; --text-sub: #737373;
             --accent-color: #1c2833; --accent-hover: #2c3e50; --border-color: #e2e8f0; --border-radius: 8px;
@@ -13,8 +14,10 @@
         body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-weight: 300; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; letter-spacing: -0.3px; font-size: 14px; }
         .main-wrapper { max-width: 1000px; width: 100%; transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%;}
 
+        /* 앱 최상단 타이틀 */
         #globalAppTitle { display: none; text-align: center; font-size: 1.4rem; font-weight: 800; color: var(--accent-color); margin-bottom: 15px; letter-spacing: 0.5px; text-transform: uppercase;}
 
+        /* 로그인 모달 */
         #lockOverlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245, 245, 247, 0.98); z-index: 100; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: flex-start; flex-direction: column; padding: 50px 20px; overflow-y: auto;}
         #lockOverlay h3 { color: var(--accent-color); font-size: 1.8rem; margin-bottom: 20px; font-weight: 400; text-align: center;}
         .login-container { display: flex; flex-direction: column; gap: 30px; width: 100%; max-width: 400px; margin-bottom: 20px;}
@@ -29,24 +32,23 @@
         .login-lang-selector button.active { border-color: var(--accent-color); color: #fff; background: var(--accent-color);}
         .btn-manual-toggle { background: none; border: none; color: #888; text-decoration: underline; cursor: pointer; font-size: 0.85rem; margin-top: 30px;}
 
+        /* 상단 유저 바 & 네비게이션 3버튼 */
         .user-bar { background: #fff; padding: 12px 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 20px; display: none; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
         .welcome-msg { font-size: 1rem; color: var(--accent-color); font-weight: 600;}
         .nav-buttons { display: flex; gap: 8px; }
-        .nav-btn { background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; font-family: inherit; position: relative;}
+        .nav-btn { background: #fff; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; font-family: inherit;}
         .nav-btn:hover { background: var(--bg-color); }
         .nav-btn.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); font-weight: 600;}
         .btn-logout { background: #fff; border: 1px solid #ffccd0; color: #ef4444; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; }
 
-        @keyframes blinkAlert { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-        .new-badge { color: #ef4444; font-size: 0.75rem; font-weight: 800; margin-left: 4px; animation: blinkAlert 1s infinite; text-shadow: 0 0 2px rgba(255,255,255,0.5); }
-        .nav-btn.active .new-badge { color: #ffeb33; }
-
+        /* 메인 컨텐츠 영역 (통합) */
         .content-area { display: flex; flex-direction: column; background: var(--surface-color); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); height: calc(100vh - 180px); min-height: 600px; box-sizing: border-box; overflow: hidden; position: relative;}
         .app-mode-view { display: none; flex-direction: column; flex: 1; min-height: 0; }
+        
         h2.mode-title { text-align: center; color: var(--accent-color); font-size: 1.2rem; font-weight: 600; margin: 0 0 15px 0;}
 
-        /* 📝 수첩 UI */
-        #memoModeUI { display: flex; } 
+        /* 📝 모드 1: 개인수첩(번역) */
+        #memoModeUI { display: flex; } /* 기본 활성화 */
         .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
         .info-group { background: var(--bg-color); padding: 8px 16px; border-radius: 20px; color: var(--accent-color); font-size: 0.9rem; text-align: center; border: 1px solid var(--border-color);}
         button.action-btn { padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; transition: 0.2s;}
@@ -63,13 +65,13 @@
         .translation-actions { display: flex; gap: 10px; margin-top: 10px; }
         .translation-actions button { flex: 1; padding: 10px; background: #fff; color: var(--accent-color); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer;}
 
-        /* 💬 메신저 UI */
+        /* 💬 모드 2: 메신저 */
         .chat-room-header { background: #fff; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); gap: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px;}
         .chat-room-header select { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); outline: none; flex: 1; font-family: inherit;}
         .chat-room-actions { display: flex; gap: 8px; }
         .chat-room-actions button { background: #fff; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem;}
         .chat-body-container { display: flex; flex: 1; position: relative; overflow: hidden; border: 1px solid var(--border-color); border-radius: 8px;}
-        .chat-main-section { display: flex; flex-direction: column; flex: 1; background: var(--chat-bg); min-width: 0; }
+        .chat-main-section { display: flex; flex-direction: column; flex: 1; background: var(--chat-bg); }
         .member-sidebar { position: absolute; right: -250px; top: 0; bottom: 0; width: 200px; background: #fff; border-left: 1px solid var(--border-color); transition: right 0.3s ease; z-index: 50; box-shadow: -2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow-y: auto;}
         .member-sidebar.open { right: 0; }
         .member-sidebar-title { padding: 15px; font-size: 0.9rem; color: var(--accent-color); font-weight: 600; border-bottom: 1px solid var(--border-color); text-align: center; background: #f8fafc;}
@@ -83,8 +85,7 @@
         .msg-row.me .msg-content-wrapper { align-items: flex-end; }
         .msg-meta { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px; gap: 3px; }
         .unread-cnt { color: #d97706; font-size: 0.75rem; font-weight: 600;}
-        .bubble { padding: 10px 14px; border-radius: 12px; position: relative; word-break: break-word; display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; transition: 0.1s;}
-        .bubble:active { transform: scale(0.98); opacity: 0.8; }
+        .bubble { padding: 10px 14px; border-radius: 12px; position: relative; word-break: break-word; display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.1);}
         .msg-row.me .bubble { background: var(--my-bubble); border-bottom-right-radius: 2px; }
         .msg-row.other .bubble { background: var(--other-bubble); border-bottom-left-radius: 2px; }
         .bubble img { max-width: 200px; border-radius: 8px; cursor: zoom-in; border: 1px solid rgba(0,0,0,0.1);}
@@ -93,27 +94,17 @@
         .msg-sub-box { border-top: 1px solid rgba(0,0,0,0.1); padding-top: 6px; display: flex; flex-direction: column; gap: 4px; }
         .msg-sub { font-size: 0.8rem; color: #555; display: flex; align-items: flex-start; line-height: 1.3;}
         .lang-badge { display: inline-block; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; margin-right: 6px; }
-        
-        /* ⭐️ 인용(답장) 블록 스타일 */
-        .quote-block { font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 6px 10px; border-left: 3px solid var(--accent-color); margin-bottom: 6px; border-radius: 4px; color: #555;}
-        .quote-sender { font-weight: 600; margin-bottom: 2px; color: var(--accent-color);}
-
-        .chat-input-area { flex: 0 0 auto; background: #fff; padding: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; box-sizing: border-box; width: 100%;}
+        .chat-input-area { flex: 0 0 auto; background: #fff; padding: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column;}
         .chat-preview-box { display: none; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .chat-preview-item { position: relative; border-radius: 6px; border: 1px solid var(--border-color); padding: 5px; background: var(--bg-color); font-size: 0.8rem;}
         .chat-preview-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
         .chat-preview-item button { position: absolute; top: -5px; right: -5px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; font-size: 0.6rem; }
-        
-        /* ⭐️ 입력창 위 답장 대상 표시 박스 */
-        #replyPreviewBox { display: none; padding: 8px 12px; background: #f0f4f8; border-radius: 6px; font-size: 0.85rem; margin-bottom: 8px; position: relative; border-left: 3px solid var(--accent-color); color: #555; align-items: center; justify-content: space-between;}
-        #replyPreviewBox button { background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer; padding: 0 5px; }
-
-        .chat-controls { display: flex; gap: 8px; align-items: flex-end; width: 100%; box-sizing: border-box;}
+        .chat-controls { display: flex; gap: 8px; align-items: flex-end; width: 100%;}
         .btn-square { background: var(--bg-color); border: 1px solid var(--border-color); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0;}
-        textarea.chat-ta { flex: 1 1 auto; height: 40px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; box-sizing: border-box; min-width: 0;}
-        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 40px; padding: 0 20px; border-radius: 8px; cursor: pointer; flex-shrink: 0; white-space: nowrap;}
+        textarea.chat-ta { flex: 1 1 auto; height: 40px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; box-sizing: border-box;}
+        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 40px; padding: 0 20px; border-radius: 8px; cursor: pointer; flex-shrink: 0;}
 
-        /* 📅 달력 UI */
+        /* 📅 모드 3: 달력 */
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;}
         .cal-header button { background: none; border: 1px solid var(--border-color); border-radius: 6px; padding: 5px 15px; font-size: 1.1rem; cursor: pointer;}
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(6, 1fr); gap: 6px; flex: 1; min-height: 0; }
@@ -164,6 +155,7 @@
             .nav-buttons { display: flex; width: 100%; gap: 5px; order: 3; justify-content: space-between;}
             .nav-buttons button { flex: 1; padding: 10px 5px; font-size: 0.85rem;}
             
+            /* 1. 모바일 개인수첩 상단 버튼 정렬 수정 (1줄 배치) */
             .top-controls { flex-direction: column; align-items: stretch; gap: 10px; }
             .left-controls, .center-controls, .right-controls { width: 100%; display: flex; }
             .left-controls button { width: 100%; }
@@ -171,13 +163,9 @@
             .right-controls { flex-direction: row; justify-content: space-between; gap: 5px; }
             .right-controls button { flex: 1; padding: 8px 2px; font-size: 0.85rem; white-space: nowrap; }
 
-            .chat-controls { gap: 5px; }
-            .btn-square { width: 36px; height: 36px; font-size: 1rem; }
-            textarea.chat-ta { height: 36px; padding: 8px 10px; font-size: 0.9rem; }
-            .btn-send { height: 36px; padding: 0 14px; font-size: 0.85rem; }
-
-            .member-sidebar { width: 220px; right: -250px; z-index: 50; }
-            .member-sidebar.open { right: 0; }
+            /* 2. 모바일 메신저 팀원 목록 등장 기능 복구 (display:none 삭제) */
+            .member-sidebar { width: 220px; right: -250px; z-index: 50; } /* 기본은 화면 밖으로 숨김 */
+            .member-sidebar.open { right: 0; } /* 버튼 누르면 오른쪽에서 밀려나옴 */
             
             .chat-room-actions { display: flex; width: 100%; justify-content: space-between; margin-top: 10px;}
             .chat-room-header { flex-direction: column; align-items: stretch; }
@@ -275,7 +263,7 @@
         <div class="welcome-msg" id="welcomeMsg"></div>
         <div class="nav-buttons">
             <button class="nav-btn active" id="navBtnMemo" onclick="setAppMode('memo')">개인수첩(번역)</button>
-            <button class="nav-btn" id="navBtnChat" onclick="setAppMode('chat')">메신저 <span id="chatNewBadge" class="new-badge" style="display:none;">NEW!</span></button>
+            <button class="nav-btn" id="navBtnChat" onclick="setAppMode('chat')">메신저</button>
             <button class="nav-btn" id="navBtnCal" onclick="setAppMode('calendar')">달력</button>
         </div>
         <button class="btn-logout" id="ui_btnLogout" onclick="logout()">로그아웃</button>
@@ -316,10 +304,6 @@
                 <div class="chat-main-section">
                     <div class="chat-area" id="chatArea"></div>
                     <div class="chat-input-area">
-                        <div id="replyPreviewBox">
-                            <span><strong id="replySender"></strong>에게 답장 중...<br><span id="replyText" style="opacity:0.8;"></span></span>
-                            <button onclick="cancelReply()">✖</button>
-                        </div>
                         <div class="chat-preview-box" id="chatPreviewBox"></div>
                         <div class="chat-controls">
                             <button class="btn-square" onclick="document.getElementById('chatPhotoInput').click()">📷</button>
@@ -355,115 +339,49 @@
     if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
     const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
+    // ⭐️ 최신 구글 서버 연동 URL
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxREd-loZ_nIJwXrSO7toaUey_x4b-IgT6YFEiDVIO_HGpZkLttWxF_d2Z38ZUZHJz8/exec"; 
 
-    // ⭐️ 7. Luong 추가 완료
-    const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
+    const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     const UI_DICT = {
         ko: { list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", 
               navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력",
               titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar",
-              photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후" },
+              photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "메시지 입력...", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후" },
         vi: { list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", 
               navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch",
               titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar",
-              photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Enter: Gửi / Shift+Enter: Xuống dòng", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều" },
+              photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Nhập tin nhắn...", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều" },
         en: { list: "List", new: "New", save: "Save", del: "Delete", 
               navMemo: "Memo(Trans)", navChat: "Messenger", navCal: "Calendar",
               titleMemo: "Personal Memo", titleChat: "KNC Messenger", titleCal: "KNC Calendar",
-              photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Enter to Send / Shift+Enter to newline", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM" }
+              photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Message...", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM" }
     };
 
     let currentUser = null; let selectedLang = 'ko'; let appMode = 'memo'; 
     let manualLang = null; let selectedLoginUser = ''; let selectedLoginGroupLang = '';
-    let hasUnreadChat = false; 
-    let replyTarget = null; // ⭐️ 인용 답장 타겟
     
     const allUsers = [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en];
-    let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en]}];
-    let currentRoomId = 'room_gen'; 
-    let chatHistory = []; 
-    let events = []; 
-    let memos = []; 
+    let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
+    let currentRoomId = 'room_gen'; let chatHistory = JSON.parse(localStorage.getItem('knc_chat_v13')) || []; 
+    let events = JSON.parse(localStorage.getItem('knc_cal_v7')) || [];
 
-    // 🟢 3&4. 접속 상태 & 새로운 방 동기화 메인 코어
     async function syncData() {
         try {
             const res = await fetch(`${GAS_URL}?action=readAll`);
             const text = await res.text();
             const result = JSON.parse(text);
-            
             if (result.status === "success") {
-                
-                // 1. 메모 DB 파싱 (일반 메모, 방 정보, 온라인 신호 분리)
-                if (result.memos) {
-                    const standardMemos = result.memos.filter(m => !m.id.toString().startsWith('online_') && !m.id.toString().startsWith('room_'));
-                    const serverMemoIds = new Set(standardMemos.map(m => m.id));
-                    const localMemoOnly = memos.filter(m => !serverMemoIds.has(m.id));
-                    memos = [...standardMemos, ...localMemoOnly].sort((a, b) => b.id - a.id);
-
-                    // ⭐️ [4. 방 동기화]
-                    const roomMemos = result.memos.filter(m => m.id.toString().startsWith('room_'));
-                    roomMemos.forEach(rm => {
-                        try {
-                            const rData = JSON.parse(rm.text);
-                            if (!chatRooms.find(r => r.id === rData.id)) {
-                                chatRooms.push(rData);
-                            }
-                        } catch(e){}
-                    });
-                    localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms));
-
-                    // ⭐️ [3. 온라인 상태 동기화] 
-                    const onlineMemos = result.memos.filter(m => m.id.toString().startsWith('online_'));
-                    let onlineDB = {};
-                    onlineMemos.forEach(om => {
-                        if (Date.now() - parseInt(om.text) < 45000) onlineDB[om.user] = true; // 45초 이내 신호만 생존
-                    });
-                    onlineDB[currentUser] = true;
-                    localStorage.setItem('knc_online_v6', JSON.stringify(onlineDB));
-                }
-
-                // 2. 채팅 동기화
-                if (result.chats) {
-                    const currentIds = new Set(chatHistory.map(c => c.id));
-                    const newServerChats = result.chats.filter(c => !currentIds.has(c.id)); 
-                    
-                    const hasNewFromOthers = newServerChats.some(c => c.sender !== currentUser);
-                    if (hasNewFromOthers && appMode !== 'chat') {
-                        hasUnreadChat = true;
-                        alertSound.play().catch(e=>{});
-                    }
-
-                    const localOnly = chatHistory.filter(c => !new Set(result.chats.map(x=>x.id)).has(c.id));
-                    chatHistory = [...result.chats, ...localOnly].sort((a, b) => a.id - b.id);
-                    localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
-                }
-
-                // 3. 일정 동기화
-                if (result.events) {
-                    const serverEvtIds = new Set(result.events.map(e => e.id));
-                    const localEvtOnly = events.filter(e => !serverEvtIds.has(e.id));
-                    events = [...result.events, ...localEvtOnly].sort((a, b) => a.id - b.id);
-                    localStorage.setItem('knc_cal_v7', JSON.stringify(events));
-                }
-
-                applyAppLanguage();
-                initChatRooms(); renderOnlineStatus();
-                if(appMode === 'chat') renderChatUI(false); // ⭐️ 강제 스크롤 방지
+                if (result.chats && result.chats.length > 0) chatHistory = result.chats;
+                if (result.events && result.events.length > 0) events = result.events;
+                localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
+                localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+                if(appMode === 'chat') renderChatUI();
                 if(appMode === 'calendar') renderCalendar();
-                if(appMode === 'memo') refreshList();
                 if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents();
             }
         } catch(e) { console.log("서버 확인 중..."); }
-    }
-
-    // ⭐️ 3. 나 살아있음(온라인) 신호 쏘기 (30초 간격)
-    function pingOnline() {
-        if(!currentUser) return;
-        const memoData = {id: 'online_'+currentUser, date:'', time:'', text: Date.now().toString(), user:currentUser};
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: memoData }) }).catch(e=>{});
     }
 
     function initLoginScreen() {
@@ -492,6 +410,7 @@
         document.getElementById('pwModalInput').onkeypress = e => { if(e.key==='Enter') submitPw(); };
     }
 
+    // 보안 로그인
     async function submitPw() {
         const pwd = document.getElementById('pwModalInput').value;
         if(!pwd) return alert("비밀번호를 입력하세요.");
@@ -516,9 +435,7 @@
                 document.getElementById('globalAppTitle').style.display = 'block';
                 document.getElementById('topUserBar').style.display = 'flex';
                 
-                applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-                
-                pingOnline(); setInterval(pingOnline, 30000); // 30초마다 온라인 신호
+                applyAppLanguage(); startNewMemo(); refreshList(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
                 syncData(); setInterval(syncData, 5000);
             } else {
                 alert("비밀번호가 틀렸습니다. 다시 확인해 주세요.");
@@ -530,6 +447,7 @@
         }
     }
 
+    // 네비게이션 모드 변경
     function setAppMode(mode) {
         appMode = mode;
         document.getElementById('memoModeUI').style.display = mode === 'memo' ? 'flex' : 'none';
@@ -538,23 +456,18 @@
 
         ['Memo', 'Chat', 'Cal'].forEach(btn => document.getElementById('navBtn' + btn).classList.remove('active'));
         if(mode === 'memo') document.getElementById('navBtnMemo').classList.add('active');
-        if(mode === 'chat') {
-            document.getElementById('navBtnChat').classList.add('active');
-            hasUnreadChat = false; 
-        }
+        if(mode === 'chat') document.getElementById('navBtnChat').classList.add('active');
         if(mode === 'calendar') document.getElementById('navBtnCal').classList.add('active');
 
         applyAppLanguage();
-        if(mode === 'memo') refreshList();
-        if(mode === 'chat') { renderChatUI(true); } // 메뉴 전환시는 맨 아래로
-        if(mode === 'calendar') renderCalendar();
+        if(mode === 'chat') { renderChatUI(); setTimeout(()=> {document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight}, 50); }
+        if(mode === 'calendar') { renderCalendar(); }
     }
 
     function applyAppLanguage() {
         const d = UI_DICT[selectedLang];
         document.getElementById('navBtnMemo').innerText = d.navMemo;
-        const badgeHTML = `<span id="chatNewBadge" class="new-badge" style="display:${hasUnreadChat ? 'inline-block' : 'none'};">NEW!</span>`;
-        document.getElementById('navBtnChat').innerHTML = d.navChat + badgeHTML;
+        document.getElementById('navBtnChat').innerText = d.navChat;
         document.getElementById('navBtnCal').innerText = d.navCal;
         document.getElementById('ui_memoLabel').innerText = d.titleMemo;
         document.getElementById('ui_chatTitle').innerText = d.titleChat;
@@ -587,7 +500,7 @@
     }
     function logout() { setOnlineStatus(false); location.reload(); }
 
-    // 📝 2. 개인수첩 
+    // 📝 개인수첩 로직 
     let curMemId = null; let currentMemoImages = [];
     function handleImageUpload(e) {
         Array.from(e.target.files).forEach(f => {
@@ -601,78 +514,46 @@
         }); e.target.value = '';
     }
     function renderGallery() { const g = document.getElementById('photoGallery'); g.innerHTML = ''; currentMemoImages.forEach((s, i) => { g.innerHTML += `<div class="gallery-item"><button class="btn-remove-photo" onclick="currentMemoImages.splice(${i},1);renderGallery()">✖</button><img src="${s}" onclick="openLightbox(this.src)"></div>`; }); }
-    
-    function startNewMemo() { 
-        curMemId = null; currentMemoImages = []; 
-        document.getElementById('mainText').value = ""; renderGallery(); 
-        document.getElementById('ui_dateGroup').innerText = UI_DICT[selectedLang].newDisplay; 
-    }
+    function startNewMemo() { curMemId = null; currentMemoImages = []; document.getElementById('mainText').value = ""; renderGallery(); document.getElementById('ui_dateGroup').innerText = UI_DICT[selectedLang].newDisplay; }
     
     async function saveMemo() {
         if(!currentUser) return;
         const val = document.getElementById('mainText').value; if(!val && currentMemoImages.length===0) return alert("내용을 입력하세요.");
-        
         if(!curMemId) curMemId = Date.now().toString();
-        const d = new Date(parseInt(curMemId)); 
-        const dS = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; 
-        const tS = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        
+        const d = new Date(parseInt(curMemId)); const dS = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; const tS = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
         const memoData = {id:curMemId, date:dS, time:tS, text:val, images:currentMemoImages, user:currentUser};
-        
-        const idx = memos.findIndex(m => m.id === curMemId);
-        if(idx > -1) memos[idx] = memoData; else memos.push(memoData);
-        
-        document.getElementById('ui_dateGroup').innerText = `${dS} ${tS}`; 
-        
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: memoData }) }).catch(e=>{});
-        alert("저장되었습니다!"); refreshList(); 
+        try { 
+            localStorage.setItem(`m_${currentUser}_${curMemId}`, JSON.stringify(memoData)); 
+            document.getElementById('ui_dateGroup').innerText = `${dS} ${tS}`; 
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveMemo', data: memoData }) }).catch(e=>{});
+            alert("저장되었습니다!"); refreshList(); 
+        } catch(e) { alert("용량 초과!"); }
     }
     
-    function loadDataById(id) { 
-        const d = memos.find(m => m.id === id); 
-        if(d) { 
-            curMemId = d.id; 
-            document.getElementById('mainText').value = d.text || ""; 
-            currentMemoImages = d.images || []; renderGallery(); 
-            document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; 
-        } 
-    }
-    
-    function deleteMemo() { 
-        if(curMemId && confirm("삭제하시겠습니까?")) { 
-            memos = memos.filter(m => m.id !== curMemId);
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteMemo', data: {id:curMemId} }) }).catch(e=>{}); 
-            startNewMemo(); refreshList(); 
-        } 
-    }
-    
+    function loadDataById(id) { const d = JSON.parse(localStorage.getItem(`m_${currentUser}_${id}`)); if(d) { curMemId = d.id; document.getElementById('mainText').value = d.text || ""; currentMemoImages = d.images || []; renderGallery(); document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; } }
+    function deleteMemo() { if(curMemId && confirm("삭제하시겠습니까?")) { localStorage.removeItem(`m_${currentUser}_${curMemId}`); fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteMemo', data: {id:curMemId} }) }).catch(e=>{}); startNewMemo(); refreshList(); } }
     function refreshList() {
         if(!currentUser) return;
-        const l = document.getElementById('memoList'); l.innerHTML = ""; 
-        const k = document.getElementById('searchInput').value.toLowerCase(); 
-        
-        let myMemos = memos.filter(m => m.user === currentUser);
-        myMemos.sort((a,b)=>b.id-a.id).forEach(d => {
+        const l = document.getElementById('memoList'); l.innerHTML = ""; const k = document.getElementById('searchInput').value.toLowerCase(); const rs = [];
+        for(let i=0; i<localStorage.length; i++) { if(localStorage.key(i).startsWith(`m_${currentUser}_`)) rs.push(JSON.parse(localStorage.getItem(localStorage.key(i)))); }
+        rs.sort((a,b)=>b.id-a.id).forEach(d => {
             if(k && !(d.text||'').toLowerCase().includes(k)) return;
             const li = document.createElement('li'); li.className='memo-item'; li.onclick=()=> {loadDataById(d.id); toggleSidebar();};
             li.innerHTML = `<span class="date-label">${d.date}${d.images&&d.images.length?" 📷":""}</span><span style="color:var(--text-sub);">${(d.text||'').substring(0,15)}...</span>`;
             l.appendChild(li);
         });
     }
-    
     function toggleSidebar() { const s = document.getElementById('sidebar'); s.classList.toggle('open'); document.getElementById('sidebarOverlay').style.display = s.classList.contains('open') ? 'block' : 'none'; }
     function openLightbox(s) { document.getElementById('lightboxImg').src = s; document.getElementById('lightboxOverlay').style.display = 'flex'; }
     function closeLightbox() { document.getElementById('lightboxOverlay').style.display = 'none'; }
     function closeTransModal() { document.getElementById('transModalOverlay').style.display = 'none'; }
     function copyTranslation() { const t = document.getElementById('transResultText'); t.select(); navigator.clipboard.writeText(t.value).then(() => alert("복사 완료!")); }
-    
     function renderTranslationButtons() {
         const box = document.getElementById('translationActions');
         if(selectedLang === 'ko') box.innerHTML = `<button onclick="translateMemo('vi')">베트남어로 번역</button><button onclick="translateMemo('en')">영어로 번역</button>`;
         else if (selectedLang === 'vi') box.innerHTML = `<button onclick="translateMemo('ko')">Dịch tiếng Hàn</button><button onclick="translateMemo('en')">Dịch tiếng Anh</button>`;
         else box.innerHTML = `<button onclick="translateMemo('ko')">Translate to Korean</button><button onclick="translateMemo('vi')">Translate to Vietnamese</button>`;
     }
-    
     async function translateMemo(targetLang) {
         const text = document.getElementById('mainText').value; if (!text) return alert("내용이 없습니다.");
         try { const res = await fetch(`${GAS_URL}?text=${encodeURIComponent(text)}&target=${targetLang}`); const data = await res.json(); document.getElementById('transModalTitle').innerText = `${targetLang.toUpperCase()} Result`; document.getElementById('transResultText').value = data.translatedText; document.getElementById('transModalOverlay').style.display = 'flex'; } catch (e) { alert("번역 에러"); }
@@ -702,13 +583,8 @@
     function openPrivateChat(targetUser) { 
         if(targetUser === currentUser) return; 
         let roomName = [currentUser, targetUser].sort().join(' & '); let expectedName = `💬 1:1 (${roomName})`; let existingRoom = chatRooms.find(r => r.name === expectedName); 
-        if (existingRoom) currentRoomId = existingRoom.id; 
-        else { 
-            const nr = { id: 'room_' + Date.now(), name: expectedName, creator: currentUser, members: [currentUser, targetUser] }; 
-            chatRooms.push(nr); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); currentRoomId = nr.id;
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: {id: nr.id, text: JSON.stringify(nr), user: currentUser} }) }).catch(e=>{});
-        } 
-        initChatRooms(); renderChatUI(true); 
+        if (existingRoom) currentRoomId = existingRoom.id; else { const nr = { id: 'r_' + Date.now(), name: expectedName, creator: currentUser, members: [currentUser, targetUser] }; chatRooms.push(nr); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); currentRoomId = nr.id; } 
+        initChatRooms(); renderChatUI(); 
     }
     
     function initChatRooms() { 
@@ -727,10 +603,10 @@
         currentRoomId = document.getElementById('chatRoomSelect').value; 
         const curRoom = chatRooms.find(r => r.id === currentRoomId); 
         if(!curRoom.members.includes(currentUser)) { curRoom.members.push(currentUser); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); initChatRooms(); } 
-        renderOnlineStatus(); renderChatUI(true); 
+        renderOnlineStatus(); renderChatUI(); 
     }
 
-    // ⭐️ 4. 방 생성 시 서버에 공유 (모든 직원에게 뜹니다)
+    let selectedInvitees = [];
     function openCreateRoomModal() {
         document.getElementById('newRoomNameInput').value = ''; selectedInvitees = [];
         const grid = document.getElementById('inviteUserGrid'); grid.innerHTML = '';
@@ -740,13 +616,9 @@
     function closeCreateRoomModal() { document.getElementById('createRoomModalOverlay').style.display = 'none'; }
     function submitCreateRoom() {
         const name = document.getElementById('newRoomNameInput').value.trim(); if(!name) return alert("방 이름을 입력하세요.");
-        const nr = { id: 'room_' + Date.now(), name: name, creator: currentUser, members: [currentUser, ...selectedInvitees] };
+        const nr = { id: 'r_' + Date.now(), name: name, creator: currentUser, members: [currentUser, ...selectedInvitees] };
         chatRooms.push(nr); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); currentRoomId = nr.id;
-        
-        // 방 정보를 서버에 올려 다른 사람들도 동기화받게 함
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: {id: nr.id, text: JSON.stringify(nr), user: currentUser} }) }).catch(e=>{});
-
-        closeCreateRoomModal(); initChatRooms(); renderOnlineStatus(); renderChatUI(true);
+        closeCreateRoomModal(); initChatRooms(); renderOnlineStatus(); renderChatUI();
     }
 
     function handleChatMedia(e, type) {
@@ -768,41 +640,12 @@
         box.style.display = 'flex';
     }
 
-    // ⭐️ 5. 인용(답장) 준비 함수
-    function prepareReply(id, sender, original) {
-        replyTarget = { id: id, sender: sender, text: original.substring(0,30) + (original.length>30?"...":"") };
-        document.getElementById('replySender').innerText = sender;
-        document.getElementById('replyText').innerText = replyTarget.text;
-        document.getElementById('replyPreviewBox').style.display = 'flex';
-        document.getElementById('chatInput').focus();
-    }
-    function cancelReply() {
-        replyTarget = null;
-        document.getElementById('replyPreviewBox').style.display = 'none';
-    }
-
-    // ⭐️ 2. 엔터키 전송 이벤트
-    document.getElementById('chatInput').addEventListener('keydown', e => { 
-        // 그냥 엔터 누르면 전송, Shift 나 Alt 누르고 엔터면 줄바꿈 허용
-        if(e.key==='Enter' && !e.shiftKey && !e.altKey) { 
-            e.preventDefault(); 
-            sendChatMessage(); 
-        } 
-    });
-
     async function sendChatMessage() {
         const txt = document.getElementById('chatInput').value.trim(); if (!txt && !curChatMedia) return;
         const mid = Date.now().toString();
-        
-        // replyTarget이 있다면 붙여서 보냄
-        const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, replyTo: replyTarget, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
-        
-        chatHistory.push(nm); 
-        document.getElementById('chatInput').value = ""; curChatMedia = null; document.getElementById('chatPreviewBox').style.display='none';
-        cancelReply(); // 답장 타겟 초기화
-
-        renderChatUI(true); // 내가 쓴 글이니 무조건 아래로
-        
+        const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
+        chatHistory.push(nm); document.getElementById('chatInput').value = ""; curChatMedia = null; document.getElementById('chatPreviewBox').style.display='none';
+        saveAndRender();
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
             try {
@@ -810,38 +653,21 @@
                 const res2 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[1]}`); const data2 = await res2.json();
                 const targetMsg = chatHistory.find(m => m.id === mid);
                 if (targetMsg) { targetMsg[targets[0]] = data1.translatedText; targetMsg[targets[1]] = data2.translatedText; targetMsg.status = 'done'; }
-                renderChatUI(false);
-                fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: targetMsg }) }).catch(e=>{});
-            } catch (e) { const targetMsg = chatHistory.find(m => m.id === mid); if (targetMsg) targetMsg.status = 'error'; renderChatUI(false); }
+                saveAndRender();
+                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveChat', data: targetMsg }) }).catch(e=>{});
+            } catch (e) { const targetMsg = chatHistory.find(m => m.id === mid); if (targetMsg) targetMsg.status = 'error'; saveAndRender(); }
         } else if (nm.media) {
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: nm }) }).catch(e=>{});
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveChat', data: nm }) }).catch(e=>{});
         }
     }
+    function saveAndRender() { localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory)); renderChatUI(); }
 
-    // ⭐️ 1 & 6. 스크롤 제어 + 읽음(숫자 1) 동기화
-    function renderChatUI(forceScrollBottom = false) {
+    function renderChatUI() {
         if(appMode !== 'chat') return;
-        const area = document.getElementById('chatArea'); 
-        
-        // ⭐️ 내가 화면 맨 아래에 있는지 확인 (위로 올려보고 있으면 스크롤 안함)
-        const isNearBottom = area.scrollHeight - area.scrollTop <= area.clientHeight + 150;
-        
-        area.innerHTML = "";
+        const area = document.getElementById('chatArea'); area.innerHTML = "";
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
-        
-        let needReadSync = false;
-        let lastUnreadMsg = null;
-
         chatHistory.filter(m => m.roomId === currentRoomId).forEach(m => {
-            if(!m.readBy) m.readBy = [m.sender]; 
-            
-            // ⭐️ 내가 안 읽은 메시지가 있다면 내 아이디 추가하고 동기화 예약
-            if(!m.readBy.includes(currentUser)) { 
-                m.readBy.push(currentUser); 
-                needReadSync = true;
-                lastUnreadMsg = m; 
-            }
-            
+            if(!m.readBy) m.readBy = [m.sender]; if(!m.readBy.includes(currentUser)) { m.readBy.push(currentUser); }
             const isMe = (m.sender === currentUser); const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'other'}`;
             const mainL = selectedLang; const subs = ['ko', 'vi', 'en'].filter(l => l !== mainL);
             let transH = "", mainH = "";
@@ -859,35 +685,16 @@
                 else mediaH = `<div class="bubble-file"><a href="${m.media.data}" download="${m.media.name}">📎 ${m.media.name}</a></div>`;
             } else if (m.image) { mediaH = `<img src="${m.image}" onclick="openLightbox(this.src)">`; }
 
-            // ⭐️ 인용(답장) 블록 HTML 추가
-            let replyH = "";
-            if(m.replyTo) {
-                replyH = `<div class="quote-block"><div class="quote-sender">${m.replyTo.sender}</div><div>${m.replyTo.text}</div></div>`;
-            }
-
             const unreadCnt = curRoom.members.length - m.readBy.length;
             const metaHTML = `<div class="msg-meta">${unreadCnt > 0 ? `<span class="unread-cnt">${unreadCnt}</span>` : ''}</div>`;
-            
-            // 말풍선에 클릭(터치) 이벤트 달아서 답장 준비시키기
-            const bubbleHTML = `<div class="msg-content-wrapper">${!isMe ? `<div class="sender-name">${m.sender}</div>` : ''}<div class="bubble" onclick="prepareReply('${m.id}', '${m.sender}', '${m.original.replace(/'/g, "\\'")}')">${replyH}${mediaH}${mainH}${transH}</div></div>`;
-            
-            row.innerHTML = isMe ? `${metaHTML}${bubbleHTML}` : `${bubbleHTML}${metaHTML}`;
+            const bubble = `<div class="msg-content-wrapper">${!isMe ? `<div class="sender-name">${m.sender}</div>` : ''}<div class="bubble">${mediaH}${mainH}${transH}</div></div>`;
+            row.innerHTML = isMe ? `${metaHTML}${bubble}` : `${bubble}${metaHTML}`;
             area.appendChild(row);
         });
-
-        // 내가 안 읽은 새 글을 방금 읽었다면, 서버에 이 글의 readBy 배열을 한 번 몰아서 통보 (숫자 지우기)
-        if (needReadSync && lastUnreadMsg) {
-            localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: lastUnreadMsg }) }).catch(e=>{});
-        }
-
-        // 스크롤 로직 (강제 명령이거나, 아까 화면 맨 아래에 있었을 때만 쫓아내려감)
-        if (forceScrollBottom || isNearBottom) {
-            area.scrollTop = area.scrollHeight;
-        }
+        localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory)); area.scrollTop = area.scrollHeight;
     }
 
-    // 📅 달력 모드
+    // 📅 달력 단독 로직
     let calSelectedDate = null; 
     let currentDate = new Date();
 
@@ -939,17 +746,15 @@
         const text = document.getElementById('newCalEventInput').value.trim(); if(!text) return alert("일정 내용을 입력하세요.");
         const tType = document.getElementById('newCalTimeSelect').value;
         const newEvt = { id: 'evt_' + Date.now(), date: calSelectedDate, text: text, user: currentUser, timeType: tType };
-        
-        events.push(newEvt); // 로컬에 먼저 반영
-        
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: newEvt }) }).catch(e=>{});
+        events.push(newEvt); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveEvent', data: newEvt }) }).catch(e=>{});
         document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); renderCalendar();
     }
 
     function deleteEvent(id) {
         if(confirm("이 일정을 삭제하시겠습니까?")) {
-            events = events.filter(e => e.id !== id);
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteEvent', data: {id:id} }) }).catch(e=>{});
+            events = events.filter(e => e.id !== id); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteEvent', data: {id:id} }) }).catch(e=>{});
             renderCalModalEvents(); renderCalendar();
         }
     }
@@ -958,13 +763,21 @@
         const evt = events.find(e => e.id === id); if(!evt) return;
         const newText = prompt("일정을 수정하세요:", evt.text);
         if(newText && newText.trim() !== '') {
-            evt.text = newText.trim(); 
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
+            evt.text = newText.trim(); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
             renderCalModalEvents(); renderCalendar();
         }
     }
 
     window.onload = initLoginScreen;
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'knc_online_v6') renderOnlineStatus();
+        if (e.key === 'knc_rooms_v13') { chatRooms = JSON.parse(e.newValue || '[]'); initChatRooms(); }
+        if (e.key === 'knc_cal_v7') { events = JSON.parse(e.newValue || '[]'); if(appMode === 'calendar') renderCalendar(); if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents(); }
+        if (e.key === 'knc_chat_v13') { const oldData = JSON.parse(e.oldValue || '[]'); const newData = JSON.parse(e.newValue || '[]'); chatHistory = newData; if (newData.length > oldData.length) { const latestMsg = newData[newData.length - 1]; if (latestMsg.sender !== currentUser && latestMsg.roomId === currentRoomId) { alertSound.play().catch(err => {}); if (Notification.permission === "granted") new Notification(`Messenger - ${latestMsg.sender}`, { body: latestMsg.original }); } } if(appMode === 'chat') renderChatUI(); }
+    });
+    document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
+    document.getElementById('newCalEventInput').addEventListener('keypress', e => { if(e.key==='Enter') { e.preventDefault(); addNewEvent(); } });
 </script>
 </body>
 </html>
