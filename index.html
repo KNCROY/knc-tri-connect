@@ -48,7 +48,7 @@
         h2.mode-title { text-align: center; color: var(--accent-color); font-size: 1.2rem; font-weight: 600; margin: 0 0 15px 0;}
 
         /* 📝 모드 1: 개인수첩(번역) */
-        #memoModeUI { display: flex; } /* 기본 활성화 */
+        #memoModeUI { display: flex; } 
         .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
         .info-group { background: var(--bg-color); padding: 8px 16px; border-radius: 20px; color: var(--accent-color); font-size: 0.9rem; text-align: center; border: 1px solid var(--border-color);}
         button.action-btn { padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; border: 1px solid var(--border-color); background: #fff; transition: 0.2s;}
@@ -147,7 +147,7 @@
         #lightboxOverlay img { max-width: 95%; max-height: 90%; object-fit: contain; border-radius: 8px; }
         .lightbox-hint { color: #fff; margin-top: 15px; font-size: 0.9rem; }
 
-        /* 📱 반응형 (모바일) 완벽 수정 */
+        /* 📱 반응형 (모바일) */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .content-area { height: calc(100vh - 120px); border-radius: var(--border-radius); border: 1px solid var(--border-color); padding: 15px; }
@@ -155,7 +155,7 @@
             .nav-buttons { display: flex; width: 100%; gap: 5px; order: 3; justify-content: space-between;}
             .nav-buttons button { flex: 1; padding: 10px 5px; font-size: 0.85rem;}
             
-            /* 1. 모바일 개인수첩 상단 버튼 정렬 수정 (1줄 배치) */
+            /* 모바일 수첩 UI 1줄 배치 (복구 완료) */
             .top-controls { flex-direction: column; align-items: stretch; gap: 10px; }
             .left-controls, .center-controls, .right-controls { width: 100%; display: flex; }
             .left-controls button { width: 100%; }
@@ -163,9 +163,9 @@
             .right-controls { flex-direction: row; justify-content: space-between; gap: 5px; }
             .right-controls button { flex: 1; padding: 8px 2px; font-size: 0.85rem; white-space: nowrap; }
 
-            /* 2. 모바일 메신저 팀원 목록 등장 기능 복구 (display:none 삭제) */
-            .member-sidebar { width: 220px; right: -250px; z-index: 50; } /* 기본은 화면 밖으로 숨김 */
-            .member-sidebar.open { right: 0; } /* 버튼 누르면 오른쪽에서 밀려나옴 */
+            /* 모바일 채팅 팀원 목록 슬라이드 (복구 완료) */
+            .member-sidebar { width: 220px; right: -250px; z-index: 50; }
+            .member-sidebar.open { right: 0; }
             
             .chat-room-actions { display: flex; width: 100%; justify-content: space-between; margin-top: 10px;}
             .chat-room-header { flex-direction: column; align-items: stretch; }
@@ -362,23 +362,47 @@
     let currentUser = null; let selectedLang = 'ko'; let appMode = 'memo'; 
     let manualLang = null; let selectedLoginUser = ''; let selectedLoginGroupLang = '';
     
-    const allUsers = [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en];
-    let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
-    let currentRoomId = 'room_gen'; let chatHistory = JSON.parse(localStorage.getItem('knc_chat_v13')) || []; 
-    let events = JSON.parse(localStorage.getItem('knc_cal_v7')) || [];
+    // ⭐️ 데이터 저장 전역 배열 (개인수첩용 memos 추가)
+    let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en]}];
+    let currentRoomId = 'room_gen'; 
+    let chatHistory = []; 
+    let events = []; 
+    let memos = []; // 메모장 서버 동기화용 배열
 
+    // 🟢 1. 데이터 동기화 함수 완벽 수정 (채팅 + 일정 + 개인수첩 모두 증발 방지 및 동기화)
     async function syncData() {
         try {
             const res = await fetch(`${GAS_URL}?action=readAll`);
             const text = await res.text();
             const result = JSON.parse(text);
+            
             if (result.status === "success") {
-                if (result.chats && result.chats.length > 0) chatHistory = result.chats;
-                if (result.events && result.events.length > 0) events = result.events;
-                localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
-                localStorage.setItem('knc_cal_v7', JSON.stringify(events));
+                // 채팅 합치기
+                if (result.chats) {
+                    const serverIds = new Set(result.chats.map(c => c.id));
+                    const localOnly = chatHistory.filter(c => !serverIds.has(c.id));
+                    chatHistory = [...result.chats, ...localOnly].sort((a, b) => a.id - b.id);
+                }
+
+                // 일정 합치기
+                if (result.events) {
+                    const serverEvtIds = new Set(result.events.map(e => e.id));
+                    const localEvtOnly = events.filter(e => !serverEvtIds.has(e.id));
+                    events = [...result.events, ...localEvtOnly].sort((a, b) => a.id - b.id);
+                }
+
+                // ⭐️ 메모 합치기 (PC-모바일 완벽 연동)
+                if (result.memos) {
+                    const serverMemoIds = new Set(result.memos.map(m => m.id));
+                    const localMemoOnly = memos.filter(m => !serverMemoIds.has(m.id));
+                    // 메모는 최신순(내림차순) 정렬
+                    memos = [...result.memos, ...localMemoOnly].sort((a, b) => b.id - a.id);
+                }
+
+                // 화면 즉시 새로고침
                 if(appMode === 'chat') renderChatUI();
                 if(appMode === 'calendar') renderCalendar();
+                if(appMode === 'memo') refreshList();
                 if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents();
             }
         } catch(e) { console.log("서버 확인 중..."); }
@@ -435,7 +459,7 @@
                 document.getElementById('globalAppTitle').style.display = 'block';
                 document.getElementById('topUserBar').style.display = 'flex';
                 
-                applyAppLanguage(); startNewMemo(); refreshList(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
+                applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
                 syncData(); setInterval(syncData, 5000);
             } else {
                 alert("비밀번호가 틀렸습니다. 다시 확인해 주세요.");
@@ -460,8 +484,9 @@
         if(mode === 'calendar') document.getElementById('navBtnCal').classList.add('active');
 
         applyAppLanguage();
+        if(mode === 'memo') refreshList();
         if(mode === 'chat') { renderChatUI(); setTimeout(()=> {document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight}, 50); }
-        if(mode === 'calendar') { renderCalendar(); }
+        if(mode === 'calendar') renderCalendar();
     }
 
     function applyAppLanguage() {
@@ -500,8 +525,11 @@
     }
     function logout() { setOnlineStatus(false); location.reload(); }
 
-    // 📝 개인수첩 로직 
+    // ==========================================
+    // 📝 2. 개인수첩 (서버 연동 완벽 적용)
+    // ==========================================
     let curMemId = null; let currentMemoImages = [];
+    
     function handleImageUpload(e) {
         Array.from(e.target.files).forEach(f => {
             const r = new FileReader(); r.onload = ev => {
@@ -514,52 +542,99 @@
         }); e.target.value = '';
     }
     function renderGallery() { const g = document.getElementById('photoGallery'); g.innerHTML = ''; currentMemoImages.forEach((s, i) => { g.innerHTML += `<div class="gallery-item"><button class="btn-remove-photo" onclick="currentMemoImages.splice(${i},1);renderGallery()">✖</button><img src="${s}" onclick="openLightbox(this.src)"></div>`; }); }
-    function startNewMemo() { curMemId = null; currentMemoImages = []; document.getElementById('mainText').value = ""; renderGallery(); document.getElementById('ui_dateGroup').innerText = UI_DICT[selectedLang].newDisplay; }
+    
+    function startNewMemo() { 
+        curMemId = null; currentMemoImages = []; 
+        document.getElementById('mainText').value = ""; renderGallery(); 
+        document.getElementById('ui_dateGroup').innerText = UI_DICT[selectedLang].newDisplay; 
+    }
     
     async function saveMemo() {
         if(!currentUser) return;
         const val = document.getElementById('mainText').value; if(!val && currentMemoImages.length===0) return alert("내용을 입력하세요.");
+        
+        // 날짜별 독립적 저장 보장 (Date.now() 고유 ID)
         if(!curMemId) curMemId = Date.now().toString();
-        const d = new Date(parseInt(curMemId)); const dS = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; const tS = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        const d = new Date(parseInt(curMemId)); 
+        const dS = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; 
+        const tS = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        
         const memoData = {id:curMemId, date:dS, time:tS, text:val, images:currentMemoImages, user:currentUser};
-        try { 
-            localStorage.setItem(`m_${currentUser}_${curMemId}`, JSON.stringify(memoData)); 
-            document.getElementById('ui_dateGroup').innerText = `${dS} ${tS}`; 
-            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveMemo', data: memoData }) }).catch(e=>{});
-            alert("저장되었습니다!"); refreshList(); 
-        } catch(e) { alert("용량 초과!"); }
+        
+        // 전역 배열에 즉시 반영 (화면 새로고침 증발 방지)
+        const idx = memos.findIndex(m => m.id === curMemId);
+        if(idx > -1) memos[idx] = memoData; else memos.push(memoData);
+        
+        document.getElementById('ui_dateGroup').innerText = `${dS} ${tS}`; 
+        
+        // ⭐️ 서버로 전송
+        fetch(GAS_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+            body: JSON.stringify({ action: 'saveMemo', data: memoData }) 
+        }).catch(e=>{});
+        
+        alert("저장되었습니다!"); refreshList(); 
     }
     
-    function loadDataById(id) { const d = JSON.parse(localStorage.getItem(`m_${currentUser}_${id}`)); if(d) { curMemId = d.id; document.getElementById('mainText').value = d.text || ""; currentMemoImages = d.images || []; renderGallery(); document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; } }
-    function deleteMemo() { if(curMemId && confirm("삭제하시겠습니까?")) { localStorage.removeItem(`m_${currentUser}_${curMemId}`); fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteMemo', data: {id:curMemId} }) }).catch(e=>{}); startNewMemo(); refreshList(); } }
+    function loadDataById(id) { 
+        const d = memos.find(m => m.id === id); 
+        if(d) { 
+            curMemId = d.id; 
+            document.getElementById('mainText').value = d.text || ""; 
+            currentMemoImages = d.images || []; renderGallery(); 
+            document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; 
+        } 
+    }
+    
+    function deleteMemo() { 
+        if(curMemId && confirm("삭제하시겠습니까?")) { 
+            memos = memos.filter(m => m.id !== curMemId);
+            fetch(GAS_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify({ action: 'deleteMemo', data: {id:curMemId} }) 
+            }).catch(e=>{}); 
+            startNewMemo(); refreshList(); 
+        } 
+    }
+    
     function refreshList() {
         if(!currentUser) return;
-        const l = document.getElementById('memoList'); l.innerHTML = ""; const k = document.getElementById('searchInput').value.toLowerCase(); const rs = [];
-        for(let i=0; i<localStorage.length; i++) { if(localStorage.key(i).startsWith(`m_${currentUser}_`)) rs.push(JSON.parse(localStorage.getItem(localStorage.key(i)))); }
-        rs.sort((a,b)=>b.id-a.id).forEach(d => {
+        const l = document.getElementById('memoList'); l.innerHTML = ""; 
+        const k = document.getElementById('searchInput').value.toLowerCase(); 
+        
+        // 내 메모만 필터링 후 내림차순 렌더링
+        let myMemos = memos.filter(m => m.user === currentUser);
+        myMemos.sort((a,b)=>b.id-a.id).forEach(d => {
             if(k && !(d.text||'').toLowerCase().includes(k)) return;
             const li = document.createElement('li'); li.className='memo-item'; li.onclick=()=> {loadDataById(d.id); toggleSidebar();};
             li.innerHTML = `<span class="date-label">${d.date}${d.images&&d.images.length?" 📷":""}</span><span style="color:var(--text-sub);">${(d.text||'').substring(0,15)}...</span>`;
             l.appendChild(li);
         });
     }
+    
     function toggleSidebar() { const s = document.getElementById('sidebar'); s.classList.toggle('open'); document.getElementById('sidebarOverlay').style.display = s.classList.contains('open') ? 'block' : 'none'; }
     function openLightbox(s) { document.getElementById('lightboxImg').src = s; document.getElementById('lightboxOverlay').style.display = 'flex'; }
     function closeLightbox() { document.getElementById('lightboxOverlay').style.display = 'none'; }
     function closeTransModal() { document.getElementById('transModalOverlay').style.display = 'none'; }
     function copyTranslation() { const t = document.getElementById('transResultText'); t.select(); navigator.clipboard.writeText(t.value).then(() => alert("복사 완료!")); }
+    
     function renderTranslationButtons() {
         const box = document.getElementById('translationActions');
         if(selectedLang === 'ko') box.innerHTML = `<button onclick="translateMemo('vi')">베트남어로 번역</button><button onclick="translateMemo('en')">영어로 번역</button>`;
         else if (selectedLang === 'vi') box.innerHTML = `<button onclick="translateMemo('ko')">Dịch tiếng Hàn</button><button onclick="translateMemo('en')">Dịch tiếng Anh</button>`;
         else box.innerHTML = `<button onclick="translateMemo('ko')">Translate to Korean</button><button onclick="translateMemo('vi')">Translate to Vietnamese</button>`;
     }
+    
     async function translateMemo(targetLang) {
         const text = document.getElementById('mainText').value; if (!text) return alert("내용이 없습니다.");
         try { const res = await fetch(`${GAS_URL}?text=${encodeURIComponent(text)}&target=${targetLang}`); const data = await res.json(); document.getElementById('transModalTitle').innerText = `${targetLang.toUpperCase()} Result`; document.getElementById('transResultText').value = data.translatedText; document.getElementById('transModalOverlay').style.display = 'flex'; } catch (e) { alert("번역 에러"); }
     }
 
-    // 💬 메신저 로직
+    // ==========================================
+    // 💬 3. 메신저 로직 (증발 방지)
+    // ==========================================
     let curChatMedia = null; 
     function toggleMemberList() {
         const sb = document.getElementById('memberSidebar'); const btn = document.getElementById('btnToggleMemberList');
@@ -644,8 +719,11 @@
         const txt = document.getElementById('chatInput').value.trim(); if (!txt && !curChatMedia) return;
         const mid = Date.now().toString();
         const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
-        chatHistory.push(nm); document.getElementById('chatInput').value = ""; curChatMedia = null; document.getElementById('chatPreviewBox').style.display='none';
-        saveAndRender();
+        
+        chatHistory.push(nm); // 로컬에 즉시 표시 (증발 방지)
+        document.getElementById('chatInput').value = ""; curChatMedia = null; document.getElementById('chatPreviewBox').style.display='none';
+        renderChatUI();
+        
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
             try {
@@ -653,14 +731,13 @@
                 const res2 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[1]}`); const data2 = await res2.json();
                 const targetMsg = chatHistory.find(m => m.id === mid);
                 if (targetMsg) { targetMsg[targets[0]] = data1.translatedText; targetMsg[targets[1]] = data2.translatedText; targetMsg.status = 'done'; }
-                saveAndRender();
-                fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveChat', data: targetMsg }) }).catch(e=>{});
-            } catch (e) { const targetMsg = chatHistory.find(m => m.id === mid); if (targetMsg) targetMsg.status = 'error'; saveAndRender(); }
+                renderChatUI();
+                fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: targetMsg }) }).catch(e=>{});
+            } catch (e) { const targetMsg = chatHistory.find(m => m.id === mid); if (targetMsg) targetMsg.status = 'error'; renderChatUI(); }
         } else if (nm.media) {
-            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveChat', data: nm }) }).catch(e=>{});
+            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: nm }) }).catch(e=>{});
         }
     }
-    function saveAndRender() { localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory)); renderChatUI(); }
 
     function renderChatUI() {
         if(appMode !== 'chat') return;
@@ -691,10 +768,12 @@
             row.innerHTML = isMe ? `${metaHTML}${bubble}` : `${bubble}${metaHTML}`;
             area.appendChild(row);
         });
-        localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory)); area.scrollTop = area.scrollHeight;
+        area.scrollTop = area.scrollHeight;
     }
 
-    // 📅 달력 단독 로직
+    // ==========================================
+    // 📅 4. 달력 모드
+    // ==========================================
     let calSelectedDate = null; 
     let currentDate = new Date();
 
@@ -746,15 +825,17 @@
         const text = document.getElementById('newCalEventInput').value.trim(); if(!text) return alert("일정 내용을 입력하세요.");
         const tType = document.getElementById('newCalTimeSelect').value;
         const newEvt = { id: 'evt_' + Date.now(), date: calSelectedDate, text: text, user: currentUser, timeType: tType };
-        events.push(newEvt); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
-        fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveEvent', data: newEvt }) }).catch(e=>{});
+        
+        events.push(newEvt); // 로컬에 먼저 반영
+        
+        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: newEvt }) }).catch(e=>{});
         document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); renderCalendar();
     }
 
     function deleteEvent(id) {
         if(confirm("이 일정을 삭제하시겠습니까?")) {
-            events = events.filter(e => e.id !== id); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
-            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteEvent', data: {id:id} }) }).catch(e=>{});
+            events = events.filter(e => e.id !== id);
+            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteEvent', data: {id:id} }) }).catch(e=>{});
             renderCalModalEvents(); renderCalendar();
         }
     }
@@ -763,21 +844,14 @@
         const evt = events.find(e => e.id === id); if(!evt) return;
         const newText = prompt("일정을 수정하세요:", evt.text);
         if(newText && newText.trim() !== '') {
-            evt.text = newText.trim(); localStorage.setItem('knc_cal_v7', JSON.stringify(events));
-            fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
+            evt.text = newText.trim(); 
+            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
             renderCalModalEvents(); renderCalendar();
         }
     }
 
     window.onload = initLoginScreen;
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'knc_online_v6') renderOnlineStatus();
-        if (e.key === 'knc_rooms_v13') { chatRooms = JSON.parse(e.newValue || '[]'); initChatRooms(); }
-        if (e.key === 'knc_cal_v7') { events = JSON.parse(e.newValue || '[]'); if(appMode === 'calendar') renderCalendar(); if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents(); }
-        if (e.key === 'knc_chat_v13') { const oldData = JSON.parse(e.oldValue || '[]'); const newData = JSON.parse(e.newValue || '[]'); chatHistory = newData; if (newData.length > oldData.length) { const latestMsg = newData[newData.length - 1]; if (latestMsg.sender !== currentUser && latestMsg.roomId === currentRoomId) { alertSound.play().catch(err => {}); if (Notification.permission === "granted") new Notification(`Messenger - ${latestMsg.sender}`, { body: latestMsg.original }); } } if(appMode === 'chat') renderChatUI(); }
-    });
-    document.getElementById('chatInput').addEventListener('keypress', e => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
-    document.getElementById('newCalEventInput').addEventListener('keypress', e => { if(e.key==='Enter') { e.preventDefault(); addNewEvent(); } });
+    
 </script>
 </body>
 </html>
