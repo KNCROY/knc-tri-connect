@@ -85,14 +85,23 @@
         .member-sidebar-title { padding: 15px; font-size: 0.9rem; color: var(--accent-color); font-weight: 600; border-bottom: 1px solid var(--border-color); text-align: center; background: #f8fafc;}
         .status-badge { padding: 12px 15px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f8fafc;}
         .chat-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        
+        /* ⭐️ 추가된 날짜 구분선 스타일 */
+        .chat-date-separator { text-align: center; margin: 10px 0; width: 100%; display: flex; justify-content: center; }
+        .chat-date-separator span { background: rgba(0,0,0,0.1); color: #444; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
         .msg-row { display: flex; align-items: flex-end; max-width: 85%; position: relative; }
         .msg-row.me { align-self: flex-end; flex-direction: row-reverse; }
         .msg-row.other { align-self: flex-start; }
         .sender-name { font-size: 0.75rem; color: #555; margin-bottom: 4px; margin-left: 4px; }
         .msg-content-wrapper { display: flex; flex-direction: column; }
         .msg-row.me .msg-content-wrapper { align-items: flex-end; }
-        .msg-meta { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px; gap: 3px; }
+        
+        /* ⭐️ 메시지 시간 스타일 */
+        .msg-meta { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px; gap: 2px; min-width: 30px; }
         .unread-cnt { color: #d97706; font-size: 0.75rem; font-weight: 600;}
+        .msg-time { font-size: 0.7rem; color: #777; margin-top: 1px; }
+
         .bubble { padding: 10px 14px; border-radius: 12px; position: relative; word-break: break-word; display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; transition: 0.1s;}
         .bubble:active { transform: scale(0.98); opacity: 0.8; }
         .msg-row.me .bubble { background: var(--my-bubble); border-bottom-right-radius: 2px; }
@@ -336,13 +345,13 @@
     if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
     const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxREd-loZ_nIJwXrSO7toaUey_x4b-IgT6YFEiDVIO_HGpZkLttWxF_d2Z38ZUZHJz8/exec"; 
-    // ⭐️ 오토핫키와 연동되는 알림용 시트 URL 추가
+    // ⭐️ 오토핫키 연동 알림 시트
     const NOTIFY_GAS_URL = "https://script.google.com/macros/s/AKfycbwI7eeWH1ySyquvLOxqcWjQ86RYjSiXvFlZSZ-NM_LA0KCtDWENrSH1k2gBKdmhZejDsg/exec";
 
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // ⭐️ 완벽하게 번역된 100% 다국어 UI 딕셔너리
+    // 다국어 UI 딕셔너리
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -827,7 +836,7 @@
 
         renderChatUI(true); 
 
-        // ⭐️⭐️ [핵심 패치] 오토핫키 알림 시트로 데이터 복사본 전송 ⭐️⭐️
+        // ⭐️ 오토핫키 연동 전송 로직 유지 (건드리지 않음)
         let notifyText = txt;
         if (!txt && nm.media) {
             notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
@@ -837,7 +846,6 @@
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(notifyText)
         }).catch(err => console.log("알림 연동 에러:", err));
-        // -------------------------------------------------------------
         
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
@@ -854,6 +862,9 @@
         }
     }
 
+    /* -------------------------------------------------------------------------- */
+    /* ⭐️ 채팅 화면 렌더링 (날짜 구분선 + 전송 시간 추가됨)                       */
+    /* -------------------------------------------------------------------------- */
     function renderChatUI(forceScrollBottom = false) {
         if(appMode !== 'chat') return;
         const area = document.getElementById('chatArea'); 
@@ -861,11 +872,35 @@
         area.innerHTML = ""; const curRoom = chatRooms.find(r => r.id === currentRoomId);
         
         let needReadSync = false; let lastUnreadMsg = null;
+        let lastDateStr = ""; // ⭐️ 날짜 구분선 기록용 변수
 
         chatHistory.filter(m => m.roomId === currentRoomId).forEach(m => {
             if(!m.readBy) m.readBy = [m.sender]; 
             if(!m.readBy.includes(currentUser)) { m.readBy.push(currentUser); needReadSync = true; lastUnreadMsg = m; }
             
+            // ⭐️ 1. 날짜 계산 및 번역 적용
+            const mDate = new Date(parseInt(m.id));
+            const y = mDate.getFullYear(), mon = mDate.getMonth() + 1, d = mDate.getDate();
+            const dayNames = UI_DICT[selectedLang].days;
+            const dayStr = dayNames[mDate.getDay()];
+            
+            let dStr = `${y}-${String(mon).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            if(selectedLang === 'ko') dStr = `${y}년 ${mon}월 ${d}일 ${dayStr}요일`;
+            else if(selectedLang === 'vi') dStr = `Ngày ${d} tháng ${mon}, ${y} (${dayStr})`;
+            else dStr = `${y}-${String(mon).padStart(2,'0')}-${String(d).padStart(2,'0')} (${dayStr})`;
+
+            // ⭐️ 2. 날짜가 바뀌었을 때 채팅창 중앙에 날짜 구분선 추가
+            if (dStr !== lastDateStr) {
+                const dateSeparator = document.createElement('div');
+                dateSeparator.className = 'chat-date-separator';
+                dateSeparator.innerHTML = `<span>${dStr}</span>`;
+                area.appendChild(dateSeparator);
+                lastDateStr = dStr;
+            }
+
+            // ⭐️ 3. 메시지 보낸 시간 (HH:MM 형식) 계산
+            const tStr = String(mDate.getHours()).padStart(2,'0') + ":" + String(mDate.getMinutes()).padStart(2,'0');
+
             const isMe = (m.sender === currentUser); const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'other'}`;
             const mainL = selectedLang; const subs = ['ko', 'vi', 'en'].filter(l => l !== mainL);
             let transH = "", mainH = "";
@@ -889,8 +924,9 @@
             let replyH = "";
             if(m.replyTo) { replyH = `<div class="quote-block"><div class="quote-sender">${m.replyTo.sender}</div><div>${m.replyTo.text}</div></div>`; }
 
+            // ⭐️ 4. 읽지 않은 사람 수 밑에 시간을 표시하도록 변경
             const unreadCnt = curRoom.members.length - m.readBy.length;
-            const metaHTML = `<div class="msg-meta">${unreadCnt > 0 ? `<span class="unread-cnt">${unreadCnt}</span>` : ''}</div>`;
+            const metaHTML = `<div class="msg-meta">${unreadCnt > 0 ? `<span class="unread-cnt">${unreadCnt}</span>` : ''}<span class="msg-time">${tStr}</span></div>`;
             
             const bubbleHTML = `<div class="msg-content-wrapper">${!isMe ? `<div class="sender-name">${m.sender}</div>` : ''}<div class="bubble" onclick="openMsgAction('${m.id}')">${replyH}${mediaH}${mainH}${transH}</div></div>`;
             
