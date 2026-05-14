@@ -836,15 +836,19 @@
 
         renderChatUI(true); 
 
-        // ⭐️ 오토핫키 연동 전송 로직 유지 (건드리지 않음)
+        // ⭐️ [문제 1 해결용] 오토핫키 연동 전송 로직 수정 (방 멤버 목록 포함해서 전송)
         let notifyText = txt;
         if (!txt && nm.media) {
             notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         }
+        
+        const curRoom = chatRooms.find(r => r.id === currentRoomId);
+        const membersStr = curRoom ? curRoom.members.join(",") : currentUser;
+        
         fetch(NOTIFY_GAS_URL, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(notifyText)
+            body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "||" + notifyText)
         }).catch(err => console.log("알림 연동 에러:", err));
         
         if (txt) {
@@ -872,13 +876,12 @@
         area.innerHTML = ""; const curRoom = chatRooms.find(r => r.id === currentRoomId);
         
         let needReadSync = false; let lastUnreadMsg = null;
-        let lastDateStr = ""; // ⭐️ 날짜 구분선 기록용 변수
+        let lastDateStr = ""; 
 
         chatHistory.filter(m => m.roomId === currentRoomId).forEach(m => {
             if(!m.readBy) m.readBy = [m.sender]; 
             if(!m.readBy.includes(currentUser)) { m.readBy.push(currentUser); needReadSync = true; lastUnreadMsg = m; }
             
-            // ⭐️ 1. 날짜 계산 및 번역 적용
             const mDate = new Date(parseInt(m.id));
             const y = mDate.getFullYear(), mon = mDate.getMonth() + 1, d = mDate.getDate();
             const dayNames = UI_DICT[selectedLang].days;
@@ -889,7 +892,6 @@
             else if(selectedLang === 'vi') dStr = `Ngày ${d} tháng ${mon}, ${y} (${dayStr})`;
             else dStr = `${y}-${String(mon).padStart(2,'0')}-${String(d).padStart(2,'0')} (${dayStr})`;
 
-            // ⭐️ 2. 날짜가 바뀌었을 때 채팅창 중앙에 날짜 구분선 추가
             if (dStr !== lastDateStr) {
                 const dateSeparator = document.createElement('div');
                 dateSeparator.className = 'chat-date-separator';
@@ -898,7 +900,6 @@
                 lastDateStr = dStr;
             }
 
-            // ⭐️ 3. 메시지 보낸 시간 (HH:MM 형식) 계산
             const tStr = String(mDate.getHours()).padStart(2,'0') + ":" + String(mDate.getMinutes()).padStart(2,'0');
 
             const isMe = (m.sender === currentUser); const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'other'}`;
@@ -924,7 +925,6 @@
             let replyH = "";
             if(m.replyTo) { replyH = `<div class="quote-block"><div class="quote-sender">${m.replyTo.sender}</div><div>${m.replyTo.text}</div></div>`; }
 
-            // ⭐️ 4. 읽지 않은 사람 수 밑에 시간을 표시하도록 변경
             const unreadCnt = curRoom.members.length - m.readBy.length;
             const metaHTML = `<div class="msg-meta">${unreadCnt > 0 ? `<span class="unread-cnt">${unreadCnt}</span>` : ''}<span class="msg-time">${tStr}</span></div>`;
             
@@ -951,7 +951,6 @@
         const year = currentDate.getFullYear(); const month = currentDate.getMonth();
         document.getElementById('calMonthDisplay').innerText = `${year}년 ${month + 1}월`;
         
-        // ⭐️ 달력 요일 다국어 변환
         const daysArr = UI_DICT[selectedLang].days;
         const grid = document.getElementById('calGrid'); 
         grid.innerHTML = daysArr.map(d => `<div class="cal-day-name">${d}</div>`).join('');
@@ -1034,6 +1033,17 @@
         fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
         renderCalModalEvents(); renderCalendar();
     }
+
+    // ⭐️ [문제 2 해결용] 단축키 및 주소 리스너 추가 (AHK에서 Alt+C를 누르면 즉시 채팅창 전환)
+    if (window.location.hash === '#chat') {
+        setTimeout(() => { if (currentUser) setAppMode('chat'); }, 500);
+    }
+
+    window.addEventListener('keydown', e => {
+        if (e.altKey && (e.key === 'c' || e.key === 'C')) {
+            if (currentUser) setAppMode('chat'); 
+        }
+    });
 
 </script>
 </body>
