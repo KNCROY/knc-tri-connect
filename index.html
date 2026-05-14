@@ -9,6 +9,10 @@
     <link rel="icon" href="logo.png">
     <meta name="theme-color" content="#1c2833">
     
+    <!-- ⭐️ Firebase SDK 추가 ⭐️ -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         /* 🎨 기본 테마 및 레이아웃 */
         :root {
@@ -345,8 +349,24 @@
     if ("Notification" in window && Notification.permission !== "granted") Notification.requestPermission();
     const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxREd-loZ_nIJwXrSO7toaUey_x4b-IgT6YFEiDVIO_HGpZkLttWxF_d2Z38ZUZHJz8/exec"; 
-    // ⭐️ 오토핫키 연동 알림 시트
     const NOTIFY_GAS_URL = "https://script.google.com/macros/s/AKfycbwI7eeWH1ySyquvLOxqcWjQ86RYjSiXvFlZSZ-NM_LA0KCtDWENrSH1k2gBKdmhZejDsg/exec";
+
+    // ⭐️ 파이어베이스 설정 (여기에 복사한 코드를 덮어쓰세요) ⭐️
+    const firebaseConfig = {
+  apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
+  authDomain: "knc-tri-connect.firebaseapp.com",
+  projectId: "knc-tri-connect",
+  storageBucket: "knc-tri-connect.firebasestorage.app",
+  messagingSenderId: "1021961204804",
+  appId: "1:1021961204804:web:c885bff0446407798df811"
+};
+
+    let fdb = null;
+    if (firebaseConfig.apiKey) {
+        firebase.initializeApp(firebaseConfig);
+        fdb = firebase.database();
+    }
+    // -------------------------------------------------------------
 
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
@@ -364,7 +384,7 @@
             list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch", titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Enter: Gửi / Shift+Enter: Xuống dòng", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều",
             days: ['CN','T2','T3','T4','T5','T6','T7'],
             replyToMsg: "Trả lời tin nhắn này", delMsg: "Xóa tin nhắn", editEvent: "Sửa sự kiện", evtDetails: "Nội dung sự kiện", cancel: "Hủy", manageEvent: "Quản lý sự kiện", newEvtPH: "Nhập sự kiện mới...", addBtn: "Thêm", myRecordList: "Danh sách của tôi", searchPH: "Tìm kiếm...", createRoom: "Tạo phòng", inviteLabel: "Chọn thành viên mời:", roomNamePH: "Nhập tên phòng", memberTitle: "Trạng thái & Chat 1:1", deleteRoom: "Xóa phòng",
-            alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập tin quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
+            alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập পাশ tin quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
             deletedMsg: "🚫 Tin nhắn đã bị xóa.", alertCopy: "Đã sao chép!", alertTransErr: "Lỗi dịch", replyingTo: "Đang trả lời"
         },
         en: { 
@@ -383,10 +403,78 @@
     let isInitialChatSync = true; 
     
     const allUsers = [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en];
-    let chatRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
+    let chatRooms = [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
     let currentRoomId = 'room_gen', chatHistory = [], events = [], memos = []; 
 
-    async function syncData() {
+    // ⭐️ 파이어베이스 실시간 동기화 함수 ⭐️
+    function initFirebaseSync() {
+        if(!fdb) return;
+
+        // 1. 채팅 실시간 동기화
+        fdb.ref('chats').on('value', snapshot => {
+            const data = snapshot.val();
+            if (!data) return;
+            const incomingChats = Object.values(data);
+            
+            const currentIds = new Set(chatHistory.map(c => c.id));
+            const newServerChats = incomingChats.filter(c => !currentIds.has(c.id)); 
+            const hasNewFromOthers = newServerChats.some(c => c.sender !== currentUser);
+            
+            if (!isInitialChatSync && hasNewFromOthers && appMode !== 'chat') { 
+                hasUnreadChat = true; 
+                alertSound.play().catch(e=>{}); 
+            }
+
+            chatHistory = incomingChats.sort((a, b) => a.id - b.id);
+            isInitialChatSync = false; 
+            if(appMode === 'chat') renderChatUI(false);
+            applyAppLanguage();
+        });
+
+        // 2. 채팅방 실시간 동기화
+        fdb.ref('rooms').on('value', snapshot => {
+            const data = snapshot.val();
+            if (!data) {
+                // 초기 기본방 생성
+                fdb.ref('rooms/room_gen').set({id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers});
+                return;
+            }
+            
+            let isRoomChanged = false;
+            const incomingRooms = Object.values(data);
+            const activeRoomIds = new Set(incomingRooms.map(rm => rm.id));
+            activeRoomIds.add('room_gen');
+            
+            incomingRooms.forEach(nr => {
+                if(!chatRooms.find(r => r.id === nr.id)) { chatRooms.push(nr); isRoomChanged = true; }
+            });
+            
+            const initialRoomCount = chatRooms.length;
+            chatRooms = chatRooms.filter(r => activeRoomIds.has(r.id));
+            if(chatRooms.length !== initialRoomCount) {
+                isRoomChanged = true;
+                if(!activeRoomIds.has(currentRoomId)) currentRoomId = 'room_gen';
+            }
+            
+            if (isRoomChanged) initChatRooms();
+        });
+
+        // 3. 온라인 상태 실시간 동기화
+        fdb.ref('online').on('value', snapshot => {
+            const data = snapshot.val();
+            if(!data) return;
+            let onlineDB = {};
+            for (const [user, timestamp] of Object.entries(data)) {
+                if (Date.now() - timestamp < 45000) onlineDB[user] = true;
+            }
+            onlineDB[currentUser] = true; 
+            localStorage.setItem('knc_online_v6', JSON.stringify(onlineDB));
+            renderOnlineStatus();
+        });
+    }
+
+    // ⭐️ 기존 구글 시트는 이제 메모와 달력만 당겨옴 ⭐️
+    async function syncDataGAS() {
         if(!currentUser) return;
         try {
             const res = await fetch(`${GAS_URL}?action=readAll`);
@@ -396,68 +484,23 @@
             if (result.status === "success") {
                 if (result.memos) {
                     memos = result.memos.filter(m => !m.id.toString().startsWith('online_') && !m.id.toString().startsWith('room_')).sort((a, b) => b.id - a.id);
-                    let isRoomChanged = false;
-                    const roomMemos = result.memos.filter(m => m.id.toString().startsWith('room_'));
-                    roomMemos.forEach(rm => {
-                        try {
-                            const rData = JSON.parse(rm.text);
-                            if (!chatRooms.find(r => r.id === rData.id)) { chatRooms.push(rData); isRoomChanged = true; }
-                        } catch(e){}
-                    });
-                    
-                    const activeRoomIds = new Set(roomMemos.map(rm => rm.id));
-                    activeRoomIds.add('room_gen');
-                    const initialRoomCount = chatRooms.length;
-                    chatRooms = chatRooms.filter(r => activeRoomIds.has(r.id));
-                    if(chatRooms.length !== initialRoomCount) {
-                        isRoomChanged = true;
-                        if(!activeRoomIds.has(currentRoomId)) currentRoomId = 'room_gen';
-                    }
-                    
-                    if (isRoomChanged) { localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); initChatRooms(); }
-
-                    const onlineMemos = result.memos.filter(m => m.id.toString().startsWith('online_'));
-                    let onlineDB = {};
-                    onlineMemos.forEach(om => { if (Date.now() - parseInt(om.text) < 45000) onlineDB[om.user] = true; });
-                    onlineDB[currentUser] = true; 
-                    localStorage.setItem('knc_online_v6', JSON.stringify(onlineDB));
                 }
-
-                if (result.chats) {
-                    const currentIds = new Set(chatHistory.map(c => c.id));
-                    const newServerChats = result.chats.filter(c => !currentIds.has(c.id)); 
-                    const hasNewFromOthers = newServerChats.some(c => c.sender !== currentUser);
-                    
-                    if (!isInitialChatSync && hasNewFromOthers && appMode !== 'chat') { 
-                        hasUnreadChat = true; 
-                        alertSound.play().catch(e=>{}); 
-                    }
-
-                    const localOnly = chatHistory.filter(c => !new Set(result.chats.map(x=>x.id)).has(c.id));
-                    chatHistory = [...result.chats, ...localOnly].sort((a, b) => a.id - b.id);
-                    localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
-                }
-
                 if (result.events) {
                     const serverEvtIds = new Set(result.events.map(e => e.id));
                     const localEvtOnly = events.filter(e => !serverEvtIds.has(e.id));
                     events = [...result.events, ...localEvtOnly].sort((a, b) => a.id - b.id);
                     localStorage.setItem('knc_cal_v7', JSON.stringify(events));
                 }
-
-                isInitialChatSync = false; 
-                applyAppLanguage(); renderOnlineStatus(); 
-                if(appMode === 'chat') renderChatUI(false); 
                 if(appMode === 'calendar') renderCalendar();
                 if(appMode === 'memo') refreshList();
                 if(document.getElementById('calModalOverlay').style.display === 'flex') renderCalModalEvents();
             }
-        } catch(e) { console.log("서버 통신 대기 중..."); }
+        } catch(e) {}
     }
 
     function pingOnline() {
         if(!currentUser) return;
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: {id: 'online_'+currentUser, date:'', time:'', text: Date.now().toString(), user:currentUser} }) }).catch(e=>{});
+        if(fdb) fdb.ref('online/' + currentUser).set(Date.now());
     }
 
     function initLoginScreen() { ['ko', 'vi', 'en'].forEach(lang => { const grid = document.getElementById(`grid_${lang}`); GROUPS[lang].forEach(user => { const btn = document.createElement('button'); btn.className = 'user-btn'; btn.innerText = user; btn.onclick = () => openPwModal(user, lang); grid.appendChild(btn); }); }); }
@@ -473,7 +516,10 @@
             document.getElementById('globalAppTitle').style.display = 'block';
             document.getElementById('topUserBar').style.display = 'flex';
             applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-            pingOnline(); setInterval(pingOnline, 30000); syncData(); setInterval(syncData, 5000);
+            
+            initFirebaseSync(); // 파이어베이스 실시간 가동
+            pingOnline(); setInterval(pingOnline, 30000); 
+            syncDataGAS(); setInterval(syncDataGAS, 5000); // 덜 무거운 구글시트 동기화
         } else { initLoginScreen(); }
     };
 
@@ -493,7 +539,10 @@
                 document.getElementById('pwModalOverlay').style.display = 'none'; document.getElementById('lockOverlay').style.display = 'none';
                 document.getElementById('globalAppTitle').style.display = 'block'; document.getElementById('topUserBar').style.display = 'flex';
                 applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
-                pingOnline(); setInterval(pingOnline, 30000); syncData(); setInterval(syncData, 5000);
+                
+                initFirebaseSync();
+                pingOnline(); setInterval(pingOnline, 30000); 
+                syncDataGAS(); setInterval(syncDataGAS, 5000);
             } else { 
                 const err2 = { ko: "비밀번호가 틀렸습니다.", vi: "Sai mật khẩu.", en: "Incorrect password." };
                 alert(err2[manualLang || selectedLoginGroupLang]); 
@@ -521,7 +570,6 @@
         if(mode === 'calendar') renderCalendar();
     }
 
-    // ⭐️ 다국어 일괄 교체 함수
     function applyAppLanguage() {
         const d = UI_DICT[selectedLang];
         document.getElementById('navBtnMemo').innerText = d.navMemo;
@@ -548,7 +596,6 @@
         document.getElementById('optEditTimeAM').innerText = d.timeAM;
         document.getElementById('optEditTimePM').innerText = d.timePM;
         
-        // 팝업/모달 다국어 설정
         document.getElementById('ui_replyBtn').innerText = d.replyToMsg;
         document.getElementById('btnMsgDelete').innerText = d.delMsg;
         document.getElementById('ui_msgCloseBtn').innerText = d.btnClose;
@@ -609,9 +656,7 @@
     document.getElementById('mainText').addEventListener('paste', e => handlePasteEvent(e, 'memo'));
     document.getElementById('chatInput').addEventListener('paste', e => handlePasteEvent(e, 'chat'));
 
-    /* -------------------------------------------------------------------------- */
-    /* 📝 2. 개인수첩 로직                                                        */
-    /* -------------------------------------------------------------------------- */
+    /* 📝 개인수첩 로직 */
     let curMemId = null; let currentMemoImages = [];
     function handleImageUpload(e, targetType) { 
         const files = Array.from(e.target.files);
@@ -647,9 +692,7 @@
         try {
             await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: memoData }) });
             alert(UI_DICT[selectedLang].alertSaved); refreshList(); 
-        } catch(e) {
-            alert(UI_DICT[selectedLang].alertNetErr);
-        }
+        } catch(e) { alert(UI_DICT[selectedLang].alertNetErr); }
     }
     
     function loadDataById(id) { const d = memos.find(m => m.id === id); if(d) { curMemId = d.id; document.getElementById('mainText').value = d.text || ""; currentMemoImages = d.images || []; renderGallery(); document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; } }
@@ -690,9 +733,7 @@
         try { const res = await fetch(`${GAS_URL}?text=${encodeURIComponent(text)}&target=${targetLang}`); const data = await res.json(); document.getElementById('transModalTitle').innerText = `${targetLang.toUpperCase()} Result`; document.getElementById('transResultText').value = data.translatedText; document.getElementById('transModalOverlay').style.display = 'flex'; } catch (e) { alert(UI_DICT[selectedLang].alertTransErr); }
     }
 
-    /* -------------------------------------------------------------------------- */
-    /* 💬 3. 메신저 로직                                                          */
-    /* -------------------------------------------------------------------------- */
+    /* 💬 메신저 로직 (Firebase로 교체 완료) */
     let curChatMedia = null; 
     function toggleMemberList() { const sb = document.getElementById('memberSidebar'); const btn = document.getElementById('btnToggleMemberList'); if (sb.classList.contains('open')) { sb.classList.remove('open'); btn.innerText = UI_DICT[selectedLang].btnMem; } else { sb.classList.add('open'); btn.innerText = UI_DICT[selectedLang].btnCloseMem; } }
     function renderOnlineStatus() { const box = document.getElementById('onlineStatusBox'); let onlineDB = JSON.parse(localStorage.getItem('knc_online_v6')) || {}; let html = ''; const curRoom = chatRooms.find(r => r.id === currentRoomId); if(!curRoom) return; curRoom.members.forEach(user => { let status = onlineDB[user] ? '🟢' : '⚪'; html += `<div class="status-badge" onclick="openPrivateChat('${user}')">${status} ${user}</div>`; }); box.innerHTML = html; }
@@ -704,7 +745,7 @@
         else { 
             const nr = { id: 'room_' + Date.now(), name: expectedName, creator: currentUser, members: [currentUser, targetUser] }; 
             chatRooms.push(nr); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); currentRoomId = nr.id;
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: {id: nr.id, text: JSON.stringify(nr), user: currentUser} }) }).catch(e=>{});
+            if(fdb) fdb.ref('rooms/' + nr.id).set(nr); // Firebase에 방 저장
         } 
         initChatRooms(); renderChatUI(true); 
     }
@@ -721,7 +762,12 @@
     function changeChatRoom() { 
         currentRoomId = document.getElementById('chatRoomSelect').value; 
         const curRoom = chatRooms.find(r => r.id === currentRoomId); 
-        if(!curRoom.members.includes(currentUser)) { curRoom.members.push(currentUser); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); initChatRooms(); } 
+        if(!curRoom.members.includes(currentUser)) { 
+            curRoom.members.push(currentUser); 
+            localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); 
+            if(fdb) fdb.ref('rooms/' + curRoom.id).set(curRoom);
+            initChatRooms(); 
+        } 
         renderOnlineStatus(); renderChatUI(true); 
         document.getElementById('btnDeleteRoom').style.display = currentRoomId === 'room_gen' ? 'none' : 'inline-block';
     }
@@ -732,7 +778,7 @@
             const targetRoomId = currentRoomId;
             chatRooms = chatRooms.filter(r => r.id !== targetRoomId);
             localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms));
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteMemo', data: {id: targetRoomId} }) }).catch(e=>{});
+            if(fdb) fdb.ref('rooms/' + targetRoomId).remove(); // Firebase에서 방 삭제
             currentRoomId = 'room_gen'; 
             initChatRooms(); renderChatUI(true);
         }
@@ -744,7 +790,7 @@
         const name = document.getElementById('newRoomNameInput').value.trim(); if(!name) return alert(UI_DICT[selectedLang].alertRoomName);
         const nr = { id: 'room_' + Date.now(), name: name, creator: currentUser, members: [currentUser, ...selectedInvitees] };
         chatRooms.push(nr); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); currentRoomId = nr.id;
-        fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveMemo', data: {id: nr.id, text: JSON.stringify(nr), user: currentUser} }) }).catch(e=>{});
+        if(fdb) fdb.ref('rooms/' + nr.id).set(nr); // Firebase에 방 저장
         closeCreateRoomModal(); initChatRooms(); renderOnlineStatus(); renderChatUI(true);
     }
 
@@ -766,9 +812,6 @@
     function toggleEmojiPanel() { const p = document.getElementById('emojiPanel'); p.style.display = p.style.display === 'flex' ? 'none' : 'flex'; }
     function insertEmoji(emoji) { const ta = document.getElementById('chatInput'); ta.value += emoji; ta.focus(); }
 
-    /* -------------------------------------------------------------------------- */
-    /* ⭐️ 메시지 클릭 -> 액션 모달창                                              */
-    /* -------------------------------------------------------------------------- */
     function openMsgAction(id) {
         const targetMsg = chatHistory.find(m => m.id === id);
         if (!targetMsg) return;
@@ -812,10 +855,9 @@
                 targetMsg.ko = targetMsg.vi = targetMsg.en = "";
                 targetMsg.media = null;
                 targetMsg.status = 'deleted';
-                fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: targetMsg }) }).catch(e=>{});
+                if(fdb) fdb.ref('chats/' + targetMsg.id).set(targetMsg); // Firebase 업데이트
             }
             document.getElementById('msgActionModalOverlay').style.display = 'none';
-            renderChatUI(false);
         }
     }
 
@@ -830,18 +872,15 @@
         const mid = Date.now().toString();
         const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, replyTo: replyTarget, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
         
+        // 내 화면에 먼저 찍어줌
         chatHistory.push(nm); 
         document.getElementById('chatInput').value = ""; curChatMedia = null; 
         document.getElementById('chatPreviewBox').style.display='none'; document.getElementById('emojiPanel').style.display='none'; cancelReply(); 
-
         renderChatUI(true); 
 
-        // ⭐️ [수정됨] 방 멤버 목록 필터링 및 구분자(##) 적용 ⭐️
+        // ⭐️ 오토핫키용 백그라운드 PC 알림 전송 (그대로 유지)
         let notifyText = txt;
-        if (!txt && nm.media) {
-            notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
-        }
-        
+        if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
         const membersStr = curRoom ? curRoom.members.join(",") : currentUser;
         
@@ -849,32 +888,29 @@
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
-        }).catch(err => console.log("알림 연동 에러:", err));
+        }).catch(err => {});
         
+        // ⭐️ 번역 및 Firebase 저장
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
             try {
                 const res1 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[0]}`); const data1 = await res1.json();
                 const res2 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[1]}`); const data2 = await res2.json();
-                const targetMsg = chatHistory.find(m => m.id === mid);
-                if (targetMsg) { targetMsg[targets[0]] = data1.translatedText; targetMsg[targets[1]] = data2.translatedText; targetMsg.status = 'done'; }
-                renderChatUI(false);
-                fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: targetMsg }) }).catch(e=>{});
-            } catch (e) { const targetMsg = chatHistory.find(m => m.id === mid); if (targetMsg) targetMsg.status = 'error'; renderChatUI(false); }
+                nm[targets[0]] = data1.translatedText; nm[targets[1]] = data2.translatedText; nm.status = 'done';
+                if(fdb) fdb.ref('chats/' + mid).set(nm); // Firebase 실시간 저장
+            } catch (e) { nm.status = 'error'; if(fdb) fdb.ref('chats/' + mid).set(nm); }
         } else if (nm.media) {
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: nm }) }).catch(e=>{});
+            if(fdb) fdb.ref('chats/' + mid).set(nm);
         }
     }
 
-    /* -------------------------------------------------------------------------- */
-    /* ⭐️ 채팅 화면 렌더링 (날짜 구분선 + 전송 시간 추가됨)                       */
-    /* -------------------------------------------------------------------------- */
     function renderChatUI(forceScrollBottom = false) {
         if(appMode !== 'chat') return;
         const area = document.getElementById('chatArea'); 
         const isNearBottom = area.scrollHeight - area.scrollTop <= area.clientHeight + 150;
         area.innerHTML = ""; const curRoom = chatRooms.find(r => r.id === currentRoomId);
-        
+        if(!curRoom) return;
+
         let needReadSync = false; let lastUnreadMsg = null;
         let lastDateStr = ""; 
 
@@ -935,70 +971,41 @@
         });
 
         if (needReadSync && lastUnreadMsg) {
-            localStorage.setItem('knc_chat_v13', JSON.stringify(chatHistory));
-            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveChat', data: lastUnreadMsg }) }).catch(e=>{});
+            // Firebase에 읽음 처리 동기화
+            if(fdb) fdb.ref('chats/' + lastUnreadMsg.id).set(lastUnreadMsg);
         }
         if (forceScrollBottom || isNearBottom) { area.scrollTop = area.scrollHeight; }
     }
 
-    /* -------------------------------------------------------------------------- */
-    /* 📅 4. 달력 모드                                                            */
-    /* -------------------------------------------------------------------------- */
-    let calSelectedDate = null; 
-    let currentDate = new Date();
-
+    /* 📅 달력 모드 */
+    let calSelectedDate = null; let currentDate = new Date();
     function renderCalendar() {
         const year = currentDate.getFullYear(); const month = currentDate.getMonth();
         document.getElementById('calMonthDisplay').innerText = `${year}년 ${month + 1}월`;
-        
         const daysArr = UI_DICT[selectedLang].days;
-        const grid = document.getElementById('calGrid'); 
-        grid.innerHTML = daysArr.map(d => `<div class="cal-day-name">${d}</div>`).join('');
-        
+        const grid = document.getElementById('calGrid'); grid.innerHTML = daysArr.map(d => `<div class="cal-day-name">${d}</div>`).join('');
         const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
         for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
-        
         for(let day=1; day<=daysInMonth; day++) {
             const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
             const isToday = dateStr === new Date().toISOString().split('T')[0] ? 'cal-today' : '';
             const dayEvents = events.filter(e => e.date === dateStr);
-            
             let eventHTML = '';
-            dayEvents.slice(0, 3).forEach(e => { 
-                const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll');
-                const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll;
-                eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.text}</div>`; 
-            });
+            dayEvents.slice(0, 3).forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.text}</div>`; });
             if(dayEvents.length > 3) { eventHTML += `<div class="cal-event-text" style="text-align:center; color:#888;">+${dayEvents.length - 3} 더보기</div>`; }
             if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
-
             grid.innerHTML += `<div class="cal-cell ${isToday}" onclick="openCalModal('${dateStr}')"><div class="cal-date-num">${day}</div>${eventHTML}</div>`;
         }
     }
-
     function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
-    
-    function openCalModal(dateStr) {
-        calSelectedDate = dateStr; 
-        document.getElementById('ui_calModalDateTitle').innerText = `${dateStr} - ${UI_DICT[selectedLang].manageEvent}`; 
-        document.getElementById('newCalEventInput').value = ''; 
-        renderCalModalEvents(); 
-        document.getElementById('calModalOverlay').style.display = 'flex';
-    }
-
+    function openCalModal(dateStr) { calSelectedDate = dateStr; document.getElementById('ui_calModalDateTitle').innerText = `${dateStr} - ${UI_DICT[selectedLang].manageEvent}`; document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); document.getElementById('calModalOverlay').style.display = 'flex'; }
     function closeCalModal() { document.getElementById('calModalOverlay').style.display = 'none'; }
-
     function renderCalModalEvents() {
         const list = document.getElementById('calModalEventList'); list.innerHTML = '';
         const dayEvents = events.filter(e => e.date === calSelectedDate);
         if(dayEvents.length === 0) { list.innerHTML = '<div style="text-align:center; color:#888; padding:20px 0;">등록된 일정이 없습니다.</div>'; return; }
-        dayEvents.forEach(e => {
-            const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll');
-            const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll;
-            list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].editEvent.substring(0,3)||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`;
-        });
+        dayEvents.forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].editEvent.substring(0,3)||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`; });
     }
-
     async function addNewEvent() {
         const text = document.getElementById('newCalEventInput').value.trim(); if(!text) return alert(UI_DICT[selectedLang].alertEvtInput);
         const tType = document.getElementById('newCalTimeSelect').value;
@@ -1007,7 +1014,6 @@
         fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: newEvt }) }).catch(e=>{});
         document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); renderCalendar();
     }
-
     function deleteEvent(id) {
         if(confirm(UI_DICT[selectedLang].confirmEvtDel)) {
             events = events.filter(e => e.id !== id);
@@ -1015,72 +1021,43 @@
             renderCalModalEvents(); renderCalendar();
         }
     }
-
     function openEditEventModal(id) {
         const evt = events.find(e => e.id === id); if(!evt) return;
-        editCalId = id;
-        document.getElementById('editCalText').value = evt.text;
-        document.getElementById('editCalTime').value = evt.timeType || 'all';
-        document.getElementById('editCalModalOverlay').style.display = 'flex';
+        editCalId = id; document.getElementById('editCalText').value = evt.text; document.getElementById('editCalTime').value = evt.timeType || 'all'; document.getElementById('editCalModalOverlay').style.display = 'flex';
     }
-
     function submitEditEvent() {
         const evt = events.find(e => e.id === editCalId); if(!evt) return;
-        evt.text = document.getElementById('editCalText').value.trim();
-        evt.timeType = document.getElementById('editCalTime').value;
-        document.getElementById('editCalModalOverlay').style.display = 'none';
-        
+        evt.text = document.getElementById('editCalText').value.trim(); evt.timeType = document.getElementById('editCalTime').value; document.getElementById('editCalModalOverlay').style.display = 'none';
         fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
         renderCalModalEvents(); renderCalendar();
     }
 
-   // ⭐️ [추가됨] 안 읽은 방으로 바로 이동시키는 똑똑한 라우팅 함수 ⭐️
+    // 똑똑한 라우팅 함수
     function openChatAndGoToUnread() {
         if (!currentUser) return;
-        
-        // 1. 가장 최근에 나에게 온 '안 읽은 메시지'가 있는 방을 역순으로 찾음
         let unreadRoomId = null;
         for (let i = chatHistory.length - 1; i >= 0; i--) {
             const m = chatHistory[i];
-            if (m.readBy && !m.readBy.includes(currentUser)) {
-                unreadRoomId = m.roomId;
-                break;
-            }
+            if (m.readBy && !m.readBy.includes(currentUser)) { unreadRoomId = m.roomId; break; }
         }
-        
-        // 2. 방을 찾았으면 그 방으로 셀렉트박스를 변경
         if (unreadRoomId && chatRooms.find(r => r.id === unreadRoomId)) {
             currentRoomId = unreadRoomId;
             document.getElementById('chatRoomSelect').value = currentRoomId;
-            
             const curRoom = chatRooms.find(r => r.id === currentRoomId);
-            if(!curRoom.members.includes(currentUser)) { 
-                curRoom.members.push(currentUser); 
-                localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); 
-                initChatRooms(); 
-            }
+            if(!curRoom.members.includes(currentUser)) { curRoom.members.push(currentUser); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); if(fdb) fdb.ref('rooms/'+curRoom.id).set(curRoom); initChatRooms(); }
         }
-        
-        // 3. 채팅 모드로 화면 전환 (렌더링은 자동 실행됨)
         setAppMode('chat');
     }
 
-    // ⭐️ [문제 완벽 해결] 알림창 클릭 시 타이밍 엇갈림(랜덤 현상) 방지
-    if (window.location.hash === '#chat') {
-        setTimeout(() => { if (currentUser) setAppMode('chat'); }, 500);
-    }
+    if (window.location.hash === '#chat') { setTimeout(() => { if (currentUser) setAppMode('chat'); }, 500); }
 
     window.addEventListener('keydown', async e => {
         if (e.altKey && (e.key === 'c' || e.key === 'C')) {
             e.preventDefault();
             if (currentUser) {
-                setAppMode('chat'); // 1. 우선 채팅 탭으로 화면을 넘김
-                document.getElementById('chatArea').innerHTML = '<div style="text-align:center; padding:20px; color:#888; font-weight:bold;">새 메시지 동기화 중... ⏳</div>'; 
-                
-                await syncData(); // 2. 5초 주기를 기다리지 않고 즉시 서버에서 최신 메시지 강제 다운로드!
-                
-                openChatAndGoToUnread(); // 3. 다운로드가 끝나면 진짜 안 읽은 방을 찾아서 스르륵 이동
-                renderChatUI(true); // 4. 화면을 맨 아래로 스크롤하여 보여줌
+                setAppMode('chat'); 
+                openChatAndGoToUnread();
+                renderChatUI(true);
             }
         }
     });
