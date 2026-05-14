@@ -836,7 +836,7 @@
 
         renderChatUI(true); 
 
-        // ⭐️ [문제 1 해결용] 오토핫키 연동 전송 로직 수정 (방 멤버 목록 포함해서 전송)
+        // ⭐️ [수정됨] 방 멤버 목록 필터링 및 구분자(##) 적용 ⭐️
         let notifyText = txt;
         if (!txt && nm.media) {
             notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
@@ -848,7 +848,7 @@
         fetch(NOTIFY_GAS_URL, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "||" + notifyText)
+            body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
         }).catch(err => console.log("알림 연동 에러:", err));
         
         if (txt) {
@@ -1034,14 +1034,41 @@
         renderCalModalEvents(); renderCalendar();
     }
 
-    // ⭐️ [문제 2 해결용] 단축키 및 주소 리스너 추가 (AHK에서 Alt+C를 누르면 즉시 채팅창 전환)
-    if (window.location.hash === '#chat') {
-        setTimeout(() => { if (currentUser) setAppMode('chat'); }, 500);
+    // ⭐️ [추가됨] 안 읽은 방으로 바로 이동시키는 똑똑한 라우팅 함수 ⭐️
+    function openChatAndGoToUnread() {
+        if (!currentUser) return;
+        
+        // 1. 가장 최근에 나에게 온 '안 읽은 메시지'가 있는 방을 역순으로 찾음
+        let unreadRoomId = null;
+        for (let i = chatHistory.length - 1; i >= 0; i--) {
+            const m = chatHistory[i];
+            if (m.readBy && !m.readBy.includes(currentUser)) {
+                unreadRoomId = m.roomId;
+                break;
+            }
+        }
+        
+        // 2. 방을 찾았으면 그 방으로 셀렉트박스를 변경
+        if (unreadRoomId && chatRooms.find(r => r.id === unreadRoomId)) {
+            currentRoomId = unreadRoomId;
+            document.getElementById('chatRoomSelect').value = currentRoomId;
+            
+            const curRoom = chatRooms.find(r => r.id === currentRoomId);
+            if(!curRoom.members.includes(currentUser)) { 
+                curRoom.members.push(currentUser); 
+                localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); 
+                initChatRooms(); 
+            }
+        }
+        
+        // 3. 채팅 모드로 화면 전환 (렌더링은 자동 실행됨)
+        setAppMode('chat');
     }
 
+    // 알림창 클릭 등으로 앱이 포커스될 때의 단축키(Alt+C) 감지
     window.addEventListener('keydown', e => {
         if (e.altKey && (e.key === 'c' || e.key === 'C')) {
-            if (currentUser) setAppMode('chat'); 
+            openChatAndGoToUnread();
         }
     });
 
