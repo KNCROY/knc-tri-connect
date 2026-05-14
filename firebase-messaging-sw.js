@@ -1,33 +1,29 @@
-<!-- 📱 모바일 웹 푸시 알림 전용 독립 코드 (PC 버전 영향 제로) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+// 1. 파이어베이스 핵심 라이브러리 불러오기 (HTML의 <script> 태그 역할을 대신함)
+importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
 
-<!-- 스마트폰에서만 보이는 알림 켜기 버튼 -->
-<button id="btnEnablePush" onclick="enableWebPush()" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; padding:12px 24px; background:var(--accent-color); color:#fff; border:none; border-radius:30px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-  🔔 스마트폰 알림 켜기
-</button>
+// 2. ⭐️ 팀장님의 파이어베이스 설정값 (index.html에 있는 firebaseConfig와 똑같이 채워주세요) ⭐️
+const firebaseConfig = {
+  apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
+  authDomain: "knc-tri-connect.firebaseapp.com",
+  projectId: "knc-tri-connect",
+  storageBucket: "knc-tri-connect.firebasestorage.app",
+  messagingSenderId: "1021961204804",
+  appId: "1:1021961204804:web:c885bff0446407798df811"
+};
 
-<script>
-  // 오토핫키(PC)가 아닌 진짜 브라우저(스마트폰 등)일 때만 버튼을 보여줍니다.
-  if (!navigator.userAgent.includes("AutoHotkey")) {
-    // 3초 뒤에 알림 켜기 버튼이 스르륵 나타납니다.
-    setTimeout(() => {
-      document.getElementById('btnEnablePush').style.display = 'block';
-    }, 3000);
-  }
+// 3. 파이어베이스 초기화 및 백그라운드 수신 대기
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
 
-  function enableWebPush() {
-    const messaging = firebase.messaging();
-    
-    // ⭐️ 2번 단계에서 복사한 VAPID 키를 아래에 넣습니다 ⭐️
-    messaging.getToken({ vapidKey: '여기에_복사한_VAPID_키를_붙여넣으세요' }).then((currentToken) => {
-      if (currentToken) {
-        // 알림 허용 시, 파이어베이스 DB 'tokens' 폴더에 본인 이름으로 토큰 저장
-        fdb.ref('tokens/' + currentUser).set(currentToken);
-        alert("모바일 알림 설정이 완료되었습니다! 이제 앱을 닫아도 알림이 옵니다.");
-        document.getElementById('btnEnablePush').style.display = 'none';
-      }
-    }).catch((err) => {
-      alert("알림 권한을 허용해 주셔야 합니다.");
-    });
-  }
-</script>
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[firebase-messaging-sw.js] 백그라운드 메시지 수신: ', payload);
+  
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: '/icon.png' // 앱 아이콘이 있다면 띄워줍니다
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
