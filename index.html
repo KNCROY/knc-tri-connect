@@ -352,7 +352,7 @@
     const NOTIFY_GAS_URL = "https://script.google.com/macros/s/AKfycbwI7eeWH1ySyquvLOxqcWjQ86RYjSiXvFlZSZ-NM_LA0KCtDWENrSH1k2gBKdmhZejDsg/exec";
 
     // ⭐️ 파이어베이스 설정 (여기에 복사한 코드를 덮어쓰세요) ⭐️
-    const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
   authDomain: "knc-tri-connect.firebaseapp.com",
   projectId: "knc-tri-connect",
@@ -371,28 +371,31 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // 다국어 UI 딕셔너리
+    // ⭐️ 다국어 UI 딕셔너리 (누락되었던 번역 항목 추가 완료) ⭐️
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후",
             days: ['일','월','화','수','목','금','토'],
             replyToMsg: "이 메시지에 답장", delMsg: "메시지 삭제", editEvent: "일정 수정", evtDetails: "일정 내용", cancel: "취소", manageEvent: "일정 관리", newEvtPH: "새로운 일정 입력...", addBtn: "추가", myRecordList: "내 기록 목록", searchPH: "검색어 입력...", createRoom: "방 만들기", inviteLabel: "초대 멤버 선택:", roomNamePH: "방 이름을 입력하세요", memberTitle: "접속 상태 & 1:1 채팅", deleteRoom: "방삭제",
             alertInput: "내용을 입력하세요.", alertSaved: "저장되었습니다!", confirmDel: "삭제하시겠습니까?", alertBaseRoom: "기본 방은 삭제할 수 없습니다.", confirmRoomDel: "이 방을 완전히 삭제하시겠습니까? 모든 팀원의 목록에서도 삭제됩니다.", alertRoomName: "방 이름을 입력하세요.", alertBigFile: "너무 큰 파일입니다. 5MB 이하를 권장합니다.", alertLimit: "⚠️ 데이터 용량 한계(약 5만자)를 초과하여 저장할 수 없습니다.\n사진을 지우거나 메모를 두 개로 나누어 저장해 주십시오.", alertNetErr: "인터넷 연결이 원활하지 않아 서버 저장에 실패했습니다.", alert2MB: "2MB 이하의 파일만 첨부 가능합니다.", confirmMsgDel: "이 메시지를 삭제하시겠습니까?", alertEvtInput: "일정 내용을 입력하세요.", confirmEvtDel: "이 일정을 삭제하시겠습니까?", promptEvtEdit: "일정을 수정하세요:",
-            deletedMsg: "🚫 삭제된 메시지입니다.", alertCopy: "복사 완료!", alertTransErr: "번역 에러", replyingTo: "님에게 답장 중..."
+            deletedMsg: "🚫 삭제된 메시지입니다.", alertCopy: "복사 완료!", alertTransErr: "번역 에러", replyingTo: "님에게 답장 중...",
+            memoPH: "현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)"
         },
         vi: { 
             list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch", titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Enter: Gửi / Shift+Enter: Xuống dòng", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều",
             days: ['CN','T2','T3','T4','T5','T6','T7'],
             replyToMsg: "Trả lời tin nhắn này", delMsg: "Xóa tin nhắn", editEvent: "Sửa sự kiện", evtDetails: "Nội dung sự kiện", cancel: "Hủy", manageEvent: "Quản lý sự kiện", newEvtPH: "Nhập sự kiện mới...", addBtn: "Thêm", myRecordList: "Danh sách của tôi", searchPH: "Tìm kiếm...", createRoom: "Tạo phòng", inviteLabel: "Chọn thành viên mời:", roomNamePH: "Nhập tên phòng", memberTitle: "Trạng thái & Chat 1:1", deleteRoom: "Xóa phòng",
-            alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập পাশ tin quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
-            deletedMsg: "🚫 Tin nhắn đã bị xóa.", alertCopy: "Đã sao chép!", alertTransErr: "Lỗi dịch", replyingTo: "Đang trả lời"
+            alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập tin quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
+            deletedMsg: "🚫 Tin nhắn đã bị xóa.", alertCopy: "Đã sao chép!", alertTransErr: "Lỗi dịch", replyingTo: "Đang trả lời",
+            memoPH: "Vui lòng ghi lại chi tiết công việc hiện trường... (Có thể sao chép và dán hình ảnh)"
         },
         en: { 
             list: "List", new: "New", save: "Save", del: "Delete", navMemo: "Memo(Trans)", navChat: "Messenger", navCal: "Calendar", titleMemo: "Personal Memo", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Enter: Send / Shift+Enter: Newline", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM",
             days: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
             replyToMsg: "Reply to this message", delMsg: "Delete message", editEvent: "Edit Event", evtDetails: "Event details", cancel: "Cancel", manageEvent: "Manage Event", newEvtPH: "New event...", addBtn: "Add", myRecordList: "My Records", searchPH: "Search...", createRoom: "Create Room", inviteLabel: "Select members to invite:", roomNamePH: "Enter room name", memberTitle: "Online Status & 1:1 Chat", deleteRoom: "Delete Room",
             alertInput: "Please enter content.", alertSaved: "Saved successfully!", confirmDel: "Are you sure you want to delete?", alertBaseRoom: "The default room cannot be deleted.", confirmRoomDel: "Are you sure you want to completely delete this room? It will be removed from all members' lists.", alertRoomName: "Please enter a room name.", alertBigFile: "File is too large. Under 5MB recommended.", alertLimit: "⚠️ Data limit exceeded (approx 50,000 chars) cannot be saved.\nPlease delete photos or split the memo in two.", alertNetErr: "Failed to save to server due to poor internet connection.", alert2MB: "Only files under 2MB can be attached.", confirmMsgDel: "Are you sure you want to delete this message?", alertEvtInput: "Please enter event details.", confirmEvtDel: "Are you sure you want to delete this event?", promptEvtEdit: "Edit the event:",
-            deletedMsg: "🚫 Deleted message.", alertCopy: "Copied!", alertTransErr: "Translation Error", replyingTo: "Replying to"
+            deletedMsg: "🚫 Deleted message.", alertCopy: "Copied!", alertTransErr: "Translation Error", replyingTo: "Replying to",
+            memoPH: "Please record the field work details... (Image copy & paste available)"
         }
     };
 
@@ -406,11 +409,10 @@
     let chatRooms = [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
     let currentRoomId = 'room_gen', chatHistory = [], events = [], memos = []; 
 
-    // ⭐️ 파이어베이스 실시간 동기화 함수 ⭐️
+    // 파이어베이스 실시간 동기화 함수
     function initFirebaseSync() {
         if(!fdb) return;
 
-        // 1. 채팅 실시간 동기화
         fdb.ref('chats').on('value', snapshot => {
             const data = snapshot.val();
             if (!data) return;
@@ -431,11 +433,9 @@
             applyAppLanguage();
         });
 
-        // 2. 채팅방 실시간 동기화
         fdb.ref('rooms').on('value', snapshot => {
             const data = snapshot.val();
             if (!data) {
-                // 초기 기본방 생성
                 fdb.ref('rooms/room_gen').set({id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers});
                 return;
             }
@@ -446,7 +446,15 @@
             activeRoomIds.add('room_gen');
             
             incomingRooms.forEach(nr => {
-                if(!chatRooms.find(r => r.id === nr.id)) { chatRooms.push(nr); isRoomChanged = true; }
+                const existingIdx = chatRooms.findIndex(r => r.id === nr.id);
+                if (existingIdx === -1) { 
+                    chatRooms.push(nr); isRoomChanged = true; 
+                } else {
+                    if (JSON.stringify(chatRooms[existingIdx].members) !== JSON.stringify(nr.members)) {
+                        chatRooms[existingIdx].members = nr.members;
+                        isRoomChanged = true;
+                    }
+                }
             });
             
             const initialRoomCount = chatRooms.length;
@@ -456,10 +464,12 @@
                 if(!activeRoomIds.has(currentRoomId)) currentRoomId = 'room_gen';
             }
             
-            if (isRoomChanged) initChatRooms();
+            if (isRoomChanged) {
+                localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms));
+                initChatRooms();
+            }
         });
 
-        // 3. 온라인 상태 실시간 동기화
         fdb.ref('online').on('value', snapshot => {
             const data = snapshot.val();
             if(!data) return;
@@ -473,7 +483,7 @@
         });
     }
 
-    // ⭐️ 기존 구글 시트는 이제 메모와 달력만 당겨옴 ⭐️
+    // 기존 구글 시트는 이제 메모와 달력만 당겨옴
     async function syncDataGAS() {
         if(!currentUser) return;
         try {
@@ -517,9 +527,9 @@
             document.getElementById('topUserBar').style.display = 'flex';
             applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
             
-            initFirebaseSync(); // 파이어베이스 실시간 가동
+            initFirebaseSync(); 
             pingOnline(); setInterval(pingOnline, 30000); 
-            syncDataGAS(); setInterval(syncDataGAS, 5000); // 덜 무거운 구글시트 동기화
+            syncDataGAS(); setInterval(syncDataGAS, 5000); 
         } else { initLoginScreen(); }
     };
 
@@ -570,6 +580,7 @@
         if(mode === 'calendar') renderCalendar();
     }
 
+    // ⭐️ 다국어 설정 강제 덮어쓰기 (누락된 부분 추가 완비) ⭐️
     function applyAppLanguage() {
         const d = UI_DICT[selectedLang];
         document.getElementById('navBtnMemo').innerText = d.navMemo;
@@ -588,6 +599,12 @@
         document.getElementById('welcomeMsg').innerText = `${currentUser} (${LANG_NAMES[selectedLang]})`;
         document.getElementById('chatInput').placeholder = d.chatPH;
         document.getElementById('ui_btnSend').innerText = d.btnSend;
+        
+        // 버튼 번역 적용
+        document.getElementById('ui_btnCreateRoom').innerText = d.btnCreateRoom;
+        // 메모 placeholder 번역 적용
+        document.getElementById('mainText').placeholder = d.memoPH;
+
         document.getElementById('ui_createRoomTitle').innerText = d.createRoom;
         document.getElementById('optTimeAll').innerText = d.timeAll;
         document.getElementById('optTimeAM').innerText = d.timeAM;
@@ -733,7 +750,7 @@
         try { const res = await fetch(`${GAS_URL}?text=${encodeURIComponent(text)}&target=${targetLang}`); const data = await res.json(); document.getElementById('transModalTitle').innerText = `${targetLang.toUpperCase()} Result`; document.getElementById('transResultText').value = data.translatedText; document.getElementById('transModalOverlay').style.display = 'flex'; } catch (e) { alert(UI_DICT[selectedLang].alertTransErr); }
     }
 
-    /* 💬 메신저 로직 (Firebase로 교체 완료) */
+    /* 💬 메신저 로직 */
     let curChatMedia = null; 
     function toggleMemberList() { const sb = document.getElementById('memberSidebar'); const btn = document.getElementById('btnToggleMemberList'); if (sb.classList.contains('open')) { sb.classList.remove('open'); btn.innerText = UI_DICT[selectedLang].btnMem; } else { sb.classList.add('open'); btn.innerText = UI_DICT[selectedLang].btnCloseMem; } }
     function renderOnlineStatus() { const box = document.getElementById('onlineStatusBox'); let onlineDB = JSON.parse(localStorage.getItem('knc_online_v6')) || {}; let html = ''; const curRoom = chatRooms.find(r => r.id === currentRoomId); if(!curRoom) return; curRoom.members.forEach(user => { let status = onlineDB[user] ? '🟢' : '⚪'; html += `<div class="status-badge" onclick="openPrivateChat('${user}')">${status} ${user}</div>`; }); box.innerHTML = html; }
@@ -745,7 +762,7 @@
         else { 
             const nr = { id: 'room_' + Date.now(), name: expectedName, creator: currentUser, members: [currentUser, targetUser] }; 
             chatRooms.push(nr); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); currentRoomId = nr.id;
-            if(fdb) fdb.ref('rooms/' + nr.id).set(nr); // Firebase에 방 저장
+            if(fdb) fdb.ref('rooms/' + nr.id).set(nr);
         } 
         initChatRooms(); renderChatUI(true); 
     }
@@ -778,7 +795,7 @@
             const targetRoomId = currentRoomId;
             chatRooms = chatRooms.filter(r => r.id !== targetRoomId);
             localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms));
-            if(fdb) fdb.ref('rooms/' + targetRoomId).remove(); // Firebase에서 방 삭제
+            if(fdb) fdb.ref('rooms/' + targetRoomId).remove(); 
             currentRoomId = 'room_gen'; 
             initChatRooms(); renderChatUI(true);
         }
@@ -790,7 +807,7 @@
         const name = document.getElementById('newRoomNameInput').value.trim(); if(!name) return alert(UI_DICT[selectedLang].alertRoomName);
         const nr = { id: 'room_' + Date.now(), name: name, creator: currentUser, members: [currentUser, ...selectedInvitees] };
         chatRooms.push(nr); localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms)); currentRoomId = nr.id;
-        if(fdb) fdb.ref('rooms/' + nr.id).set(nr); // Firebase에 방 저장
+        if(fdb) fdb.ref('rooms/' + nr.id).set(nr);
         closeCreateRoomModal(); initChatRooms(); renderOnlineStatus(); renderChatUI(true);
     }
 
@@ -855,7 +872,7 @@
                 targetMsg.ko = targetMsg.vi = targetMsg.en = "";
                 targetMsg.media = null;
                 targetMsg.status = 'deleted';
-                if(fdb) fdb.ref('chats/' + targetMsg.id).set(targetMsg); // Firebase 업데이트
+                if(fdb) fdb.ref('chats/' + targetMsg.id).set(targetMsg); 
             }
             document.getElementById('msgActionModalOverlay').style.display = 'none';
         }
@@ -872,13 +889,13 @@
         const mid = Date.now().toString();
         const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, replyTo: replyTarget, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
         
-        // 내 화면에 먼저 찍어줌
         chatHistory.push(nm); 
         document.getElementById('chatInput').value = ""; curChatMedia = null; 
         document.getElementById('chatPreviewBox').style.display='none'; document.getElementById('emojiPanel').style.display='none'; cancelReply(); 
         renderChatUI(true); 
 
-        // ⭐️ 오토핫키용 백그라운드 PC 알림 전송 (그대로 유지)
+        if(fdb) fdb.ref('chats/' + mid).set(nm);
+
         let notifyText = txt;
         if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
@@ -890,17 +907,22 @@
             body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
         }).catch(err => {});
         
-        // ⭐️ 번역 및 Firebase 저장
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
             try {
                 const res1 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[0]}`); const data1 = await res1.json();
                 const res2 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[1]}`); const data2 = await res2.json();
+                
                 nm[targets[0]] = data1.translatedText; nm[targets[1]] = data2.translatedText; nm.status = 'done';
-                if(fdb) fdb.ref('chats/' + mid).set(nm); // Firebase 실시간 저장
-            } catch (e) { nm.status = 'error'; if(fdb) fdb.ref('chats/' + mid).set(nm); }
-        } else if (nm.media) {
-            if(fdb) fdb.ref('chats/' + mid).set(nm);
+                
+                renderChatUI(false); 
+                if(fdb) fdb.ref('chats/' + mid).set(nm); 
+
+            } catch (e) { 
+                nm.status = 'error'; 
+                renderChatUI(false); 
+                if(fdb) fdb.ref('chats/' + mid).set(nm); 
+            }
         }
     }
 
@@ -948,7 +970,7 @@
                 let displayTxt = (m.status === 'done') ? m[mainL] : m.original;
                 displayTxt = displayTxt.replace(/@([A-Za-z가-힣0-9.]+)/g, '<span class="mention">@$1</span>');
                 mainH = `<div class="msg-main">${displayTxt}</div>`;
-                if (m.status === 'loading') transH = `<div class="msg-sub-box"><span class="loading-text">Translating...</span></div>`;
+                if (m.status === 'loading') transH = `<div class="msg-sub-box"><span class="loading-text" style="color:var(--accent-color); font-weight:bold;">Translating...⏳</span></div>`;
                 else if (m.status === 'done') transH = `<div class="msg-sub-box"><div class="msg-sub"><span class="lang-badge">${LANG_NAMES[subs[0]]}</span> ${m[subs[0]]}</div><div class="msg-sub"><span class="lang-badge">${LANG_NAMES[subs[1]]}</span> ${m[subs[1]]}</div></div>`;
             }
             
@@ -971,7 +993,6 @@
         });
 
         if (needReadSync && lastUnreadMsg) {
-            // Firebase에 읽음 처리 동기화
             if(fdb) fdb.ref('chats/' + lastUnreadMsg.id).set(lastUnreadMsg);
         }
         if (forceScrollBottom || isNearBottom) { area.scrollTop = area.scrollHeight; }
@@ -979,9 +1000,17 @@
 
     /* 📅 달력 모드 */
     let calSelectedDate = null; let currentDate = new Date();
+    
+    // ⭐️ 달력 년/월 번역 강제 적용 ⭐️
     function renderCalendar() {
         const year = currentDate.getFullYear(); const month = currentDate.getMonth();
-        document.getElementById('calMonthDisplay').innerText = `${year}년 ${month + 1}월`;
+        
+        let calTitle = "";
+        if (selectedLang === 'ko') calTitle = `${year}년 ${month + 1}월`;
+        else if (selectedLang === 'vi') calTitle = `Tháng ${month + 1}, ${year}`;
+        else calTitle = `${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][month]} ${year}`;
+        document.getElementById('calMonthDisplay').innerText = calTitle;
+        
         const daysArr = UI_DICT[selectedLang].days;
         const grid = document.getElementById('calGrid'); grid.innerHTML = daysArr.map(d => `<div class="cal-day-name">${d}</div>`).join('');
         const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
