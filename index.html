@@ -352,7 +352,7 @@
     const NOTIFY_GAS_URL = "https://script.google.com/macros/s/AKfycbwI7eeWH1ySyquvLOxqcWjQ86RYjSiXvFlZSZ-NM_LA0KCtDWENrSH1k2gBKdmhZejDsg/exec";
 
     // ⭐️ 파이어베이스 설정 (여기에 복사한 코드를 덮어쓰세요) ⭐️
-  const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
   authDomain: "knc-tri-connect.firebaseapp.com",
   projectId: "knc-tri-connect",
@@ -371,7 +371,7 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // ⭐️ 다국어 UI 딕셔너리 (누락되었던 번역 항목 추가 완료) ⭐️
+    // ⭐️ 다국어 UI 딕셔너리 (누락되었던 번역 항목 완벽 적용) ⭐️
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -406,7 +406,11 @@
     let isInitialChatSync = true; 
     
     const allUsers = [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en];
-    let chatRooms = [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
+    
+    // ⭐️ [복구됨] 안전한 로컬 스토리지 초기화 (서버 지연 시 방 목록 증발 방지)
+    let savedRooms = [];
+    try { savedRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || []; } catch(e){}
+    let chatRooms = savedRooms.length > 0 ? savedRooms : [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
     let currentRoomId = 'room_gen', chatHistory = [], events = [], memos = []; 
 
     // 파이어베이스 실시간 동기화 함수
@@ -580,7 +584,6 @@
         if(mode === 'calendar') renderCalendar();
     }
 
-    // ⭐️ 다국어 설정 강제 덮어쓰기 (누락된 부분 추가 완비) ⭐️
     function applyAppLanguage() {
         const d = UI_DICT[selectedLang];
         document.getElementById('navBtnMemo').innerText = d.navMemo;
