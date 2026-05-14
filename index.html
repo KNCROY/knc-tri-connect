@@ -1034,7 +1034,7 @@
         renderCalModalEvents(); renderCalendar();
     }
 
-    // ⭐️ [추가됨] 안 읽은 방으로 바로 이동시키는 똑똑한 라우팅 함수 ⭐️
+   // ⭐️ [추가됨] 안 읽은 방으로 바로 이동시키는 똑똑한 라우팅 함수 ⭐️
     function openChatAndGoToUnread() {
         if (!currentUser) return;
         
@@ -1065,10 +1065,23 @@
         setAppMode('chat');
     }
 
-    // 알림창 클릭 등으로 앱이 포커스될 때의 단축키(Alt+C) 감지
-    window.addEventListener('keydown', e => {
+    // ⭐️ [문제 완벽 해결] 알림창 클릭 시 타이밍 엇갈림(랜덤 현상) 방지
+    if (window.location.hash === '#chat') {
+        setTimeout(() => { if (currentUser) setAppMode('chat'); }, 500);
+    }
+
+    window.addEventListener('keydown', async e => {
         if (e.altKey && (e.key === 'c' || e.key === 'C')) {
-            openChatAndGoToUnread();
+            e.preventDefault();
+            if (currentUser) {
+                setAppMode('chat'); // 1. 우선 채팅 탭으로 화면을 넘김
+                document.getElementById('chatArea').innerHTML = '<div style="text-align:center; padding:20px; color:#888; font-weight:bold;">새 메시지 동기화 중... ⏳</div>'; 
+                
+                await syncData(); // 2. 5초 주기를 기다리지 않고 즉시 서버에서 최신 메시지 강제 다운로드!
+                
+                openChatAndGoToUnread(); // 3. 다운로드가 끝나면 진짜 안 읽은 방을 찾아서 스르륵 이동
+                renderChatUI(true); // 4. 화면을 맨 아래로 스크롤하여 보여줌
+            }
         }
     });
 
