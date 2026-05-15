@@ -2,10 +2,11 @@
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
 
-// 2. ⭐️ 팀장님의 파이어베이스 설정값 (index.html에 있는 firebaseConfig와 똑같이 채워주세요) ⭐️
+// 2. ⭐️ 팀장님의 파이어베이스 설정값 (누락되었던 databaseURL 정식 추가) ⭐️
 const firebaseConfig = {
   apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
   authDomain: "knc-tri-connect.firebaseapp.com",
+  databaseURL: "https://knc-tri-connect-default-rtdb.firebaseio.com",
   projectId: "knc-tri-connect",
   storageBucket: "knc-tri-connect.firebasestorage.app",
   messagingSenderId: "1021961204804",
@@ -21,8 +22,8 @@ messaging.onBackgroundMessage(function(payload) {
   
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/icon.png' // 앱 아이콘이 있다면 띄워줍니다
+    body: payload.notification.body
+    // ⭐️ 정확한 조치: 에러를 유발하던 icon 속성을 완전히 삭제하여 순수 텍스트 알림만 강제 출력되도록 수정함
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
