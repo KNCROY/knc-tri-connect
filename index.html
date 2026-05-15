@@ -925,16 +925,22 @@
         if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
         
-        // 발신자(본인)를 리스트에서 완벽하게 제외 (본인 알림 중복 루프 방지) (Fix 4)
+        // ⭐️ [수정된 부분 시작] ⭐️
+        // 방에 속해 있는 멤버 리스트(members) 중 나(currentUser)를 제외한 나머지 인원만 남깁니다.
         const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
+        
+        // 보낼 사람(수신자)이 1명이라도 있을 때만 알림 서버로 전송합니다. (나 혼자 있는 방이면 안 보냄)
         if (receivers.length > 0) {
+            // 위에서 나를 뺐기 때문에, 이제 온전한 수신자 명단만 콤마로 묶어 서버로 넘깁니다.
             const membersStr = receivers.join(",");
+            
             fetch(NOTIFY_GAS_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
             }).catch(err => {});
         }
+        // ⭐️ [수정된 부분 끝] ⭐️
         
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
