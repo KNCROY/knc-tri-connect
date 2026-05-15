@@ -900,7 +900,7 @@
 
     function cancelReply() { replyTarget = null; document.getElementById('replyPreviewBox').style.display = 'none'; }
 
-    // ⭐️ 1번 방어막: 모바일 가상키보드(천지인 등)에서 한글 입력 시 엔터(Enter) 이벤트가 2번 연속 발생하는 버그 차단 (!e.isComposing 추가)
+    // 모바일 가상키보드 중복 엔터 방지
     document.getElementById('chatInput').addEventListener('keydown', e => { 
         if(e.key==='Enter' && !e.shiftKey && !e.altKey && !e.isComposing) { 
             e.preventDefault(); 
@@ -908,7 +908,6 @@
         } 
     });
 
-    // ⭐️ 2번 방어막: 버튼 연타 또는 이중 실행을 완벽하게 막아주는 0.8초 잠금장치(Debounce)
     let isSendingMessage = false;
 
     async function sendChatMessage() {
@@ -917,8 +916,8 @@
         const txt = document.getElementById('chatInput').value.trim(); 
         if (!txt && !curChatMedia) return;
         
-        isSendingMessage = true; // 잠금 활성화
-        setTimeout(() => { isSendingMessage = false; }, 800); // 0.8초 뒤에 잠금 해제
+        isSendingMessage = true; 
+        setTimeout(() => { isSendingMessage = false; }, 800); // 0.8초 잠금 유지
 
         const mid = Date.now().toString();
         const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, replyTo: replyTarget, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
@@ -932,24 +931,13 @@
 
         let notifyText = txt;
         if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
-        const curRoom = chatRooms.find(r => r.id === currentRoomId);
         
-        // ⭐️ 3번 방어막 (보내는 사람 본인 알람 완벽 차단): 서버(GAS) 로직 우회 기법
-        const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
-        if (receivers.length > 0) {
-            const membersStr = receivers.join(",");
-            
-            // 보내는 사람(currentUser)의 이름 맨 뒤에 "눈에 안 보이는 투명 글자(\u200B)"를 몰래 붙입니다.
-            // 구글 서버가 이 이름을 보고 DB에서 핸드폰 토큰을 찾으려 시도하지만, "투명 글자" 때문에 일치하는 핸드폰을 찾을 수 없게 됩니다.
-            // 결과적으로 서버는 보내는 사람 본인에게 알람을 쏘지 못하고 우회 차단됩니다! (상대방 폰에는 정상 표시)
-            const fakeSenderToBypassGas = currentUser + "\u200B";
-            
-            fetch(NOTIFY_GAS_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "user=" + encodeURIComponent(fakeSenderToBypassGas) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
-            }).catch(err => {});
-        }
+        // ⭐️ 완벽하게 원복된 알림 전송 (구글 서버 정상 동작 및 발신자 제외를 위해 정석대로 전송) ⭐️
+        fetch(NOTIFY_GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(notifyText)
+        }).catch(err => {});
         
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
@@ -1170,20 +1158,37 @@
               
               let myName = typeof currentUser !== 'undefined' ? currentUser : "Roy (KR)";
 
-              firebase.database().ref('tokens/' + myName).set(currentToken)
-              .then(() => {
-                localStorage.setItem('knc_push_enabled', 'true');
-                
-                // 등록 성공 후 포그라운드 가로채기 즉시 활성화
-                firebase.messaging().onMessage((payload) => {
-                    console.log("포그라운드 알림 수신됨 (화면 표시 안함):", payload);
-                });
+              // ⭐️ 파이어베이스 DB를 뒤져서 과거 테스트했던 이름들의 '중복 토큰'을 모조리 자동 청소합니다!
+              firebase.database().ref('tokens').once('value').then(snapshot => {
+                  const tokensData = snapshot.val() || {};
+                  const updates = {};
+                  
+                  // 현재 핸드폰 토큰과 똑같은 토큰이 저장된 과거 이름들을 찾아서 삭제(null) 처리
+                  for (const [name, token] of Object.entries(tokensData)) {
+                      if (token === currentToken) {
+                          updates[name] = null; 
+                      }
+                  }
+                  
+                  // 방금 깨끗하게 청소한 뒤, 오직 '현재 내 이름 하나'만 정확하게 등록
+                  updates[myName] = currentToken; 
+                  
+                  // 업데이트 실행
+                  firebase.database().ref('tokens').update(updates)
+                  .then(() => {
+                    localStorage.setItem('knc_push_enabled', 'true');
+                    
+                    // 등록 성공 후 포그라운드 가로채기 즉시 활성화
+                    firebase.messaging().onMessage((payload) => {
+                        console.log("포그라운드 알림 수신됨 (화면 표시 안함):", payload);
+                    });
 
-                alert(d.pushSuccess);
-                document.getElementById('btnEnablePush').style.display = 'none';
-              })
-              .catch((dbErr) => {
-                alert(d.pushFailConn + dbErr.message);
+                    alert(d.pushSuccess);
+                    document.getElementById('btnEnablePush').style.display = 'none';
+                  })
+                  .catch((dbErr) => {
+                    alert(d.pushFailConn + dbErr.message);
+                  });
               });
 
             }
