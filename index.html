@@ -9,9 +9,9 @@
     <link rel="icon" href="logo.png">
     <meta name="theme-color" content="#1c2833">
     
-    <!-- ⭐️ Firebase SDK 추가 ⭐️ -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
 
     <style>
         /* 🎨 기본 테마 및 레이아웃 */
@@ -20,7 +20,14 @@
             --accent-color: #1c2833; --accent-hover: #2c3e50; --border-color: #e2e8f0; --border-radius: 8px;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.05); --chat-bg: #b2c7d9; --my-bubble: #ffeb33; --other-bubble: #ffffff;     
         }
-        body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-weight: 300; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; letter-spacing: -0.3px; font-size: 14px; }
+        /* Fix 2: PC 최소 창 크기 고정 및 Fix 5: 화면 스크롤 문제 해결 (100vh 및 Flex 적용) */
+        body { 
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-weight: 300; 
+            background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; 
+            display: flex; justify-content: center; letter-spacing: -0.3px; font-size: 14px; 
+            min-width: 480px; min-height: 700px; /* PC창 크기 제한 */
+            height: 100vh; overflow: auto; box-sizing: border-box;
+        }
         .main-wrapper { max-width: 1000px; width: 100%; transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%;}
         
         #globalAppTitle { display: none; text-align: center; font-size: 1.4rem; font-weight: 800; color: var(--accent-color); margin-bottom: 15px; letter-spacing: 0.5px; text-transform: uppercase;}
@@ -53,7 +60,8 @@
         .new-badge { color: #ef4444; font-size: 0.75rem; font-weight: 800; margin-left: 4px; animation: blinkAlert 1s infinite; text-shadow: 0 0 2px rgba(255,255,255,0.5); }
         .nav-btn.active .new-badge { color: #ffeb33; }
 
-        .content-area { display: flex; flex-direction: column; background: var(--surface-color); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); height: calc(100vh - 180px); min-height: 600px; box-sizing: border-box; overflow: hidden; position: relative;}
+        /* Fix 5: flex 1 과 min-height 0 을 주어 자동맞춤 (입력창 스크롤 없이 보임) */
+        .content-area { display: flex; flex-direction: column; background: var(--surface-color); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); flex: 1; min-height: 0; box-sizing: border-box; overflow: hidden; position: relative;}
         .app-mode-view { display: none; flex-direction: column; flex: 1; min-height: 0; }
         h2.mode-title { text-align: center; color: var(--accent-color); font-size: 1.2rem; font-weight: 600; margin: 0 0 15px 0;}
 
@@ -90,7 +98,6 @@
         .status-badge { padding: 12px 15px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f8fafc;}
         .chat-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         
-        /* ⭐️ 추가된 날짜 구분선 스타일 */
         .chat-date-separator { text-align: center; margin: 10px 0; width: 100%; display: flex; justify-content: center; }
         .chat-date-separator span { background: rgba(0,0,0,0.1); color: #444; padding: 4px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 
@@ -101,7 +108,6 @@
         .msg-content-wrapper { display: flex; flex-direction: column; }
         .msg-row.me .msg-content-wrapper { align-items: flex-end; }
         
-        /* ⭐️ 메시지 시간 스타일 */
         .msg-meta { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 6px; gap: 2px; min-width: 30px; }
         .unread-cnt { color: #d97706; font-size: 0.75rem; font-weight: 600;}
         .msg-time { font-size: 0.7rem; color: #777; margin-top: 1px; }
@@ -117,7 +123,6 @@
         .msg-sub { font-size: 0.8rem; color: #555; display: flex; align-items: flex-start; line-height: 1.3;}
         .lang-badge { display: inline-block; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; margin-right: 6px; }
         
-        /* 인용(답장) 관련 스타일 */
         .quote-block { font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 6px 10px; border-left: 3px solid var(--accent-color); margin-bottom: 6px; border-radius: 4px; color: #555;}
         .quote-sender { font-weight: 600; margin-bottom: 2px; color: var(--accent-color);}
 
@@ -177,8 +182,8 @@
 
         /* 📱 반응형 (모바일) 완벽 설정 */
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .content-area { height: calc(100vh - 120px); border-radius: var(--border-radius); border: 1px solid var(--border-color); padding: 15px; }
+            body { padding: 10px; min-width: 100%; min-height: 100%;}
+            .content-area { border-radius: var(--border-radius); border: 1px solid var(--border-color); padding: 15px; flex: 1;}
             .user-bar { flex-wrap: wrap; gap: 10px; justify-content: center; padding: 10px;}
             .nav-buttons { display: flex; width: 100%; gap: 5px; order: 3; justify-content: space-between;}
             .nav-buttons button { flex: 1; padding: 10px 5px; font-size: 0.85rem;}
@@ -289,8 +294,8 @@
     <div class="user-bar" id="topUserBar">
         <div class="welcome-msg" id="welcomeMsg"></div>
         <div class="nav-buttons">
-            <button class="nav-btn active" id="navBtnMemo" onclick="setAppMode('memo')">개인수첩(번역)</button>
             <button class="nav-btn" id="navBtnChat" onclick="setAppMode('chat')">메신저 <span id="chatNewBadge" class="new-badge" style="display:none;">NEW!</span></button>
+            <button class="nav-btn active" id="navBtnMemo" onclick="setAppMode('memo')">개인수첩(번역)</button>
             <button class="nav-btn" id="navBtnCal" onclick="setAppMode('calendar')">달력</button>
         </div>
         <button class="btn-logout" id="ui_btnLogout" onclick="logout()">로그아웃</button>
@@ -299,7 +304,11 @@
     <div class="content-area">
         
         <div id="memoModeUI" class="app-mode-view">
-            <h2 class="mode-title" id="ui_memoLabel">개인수첩(번역)</h2>
+            <div style="text-align:center; margin-bottom:15px;">
+                <h2 class="mode-title" style="display:inline; margin:0;" id="ui_memoLabel">개인수첩(번역)</h2>
+                <button id="btnEnablePush" onclick="enableWebPush()" style="display:none; margin-left:10px; padding:4px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:15px; cursor:pointer; vertical-align:middle; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1);">🔔 스마트폰 알림 켜기</button>
+            </div>
+            
             <div class="top-controls">
                 <div class="left-controls"><button class="action-btn" id="ui_btnList" onclick="toggleSidebar()">목록 열기</button></div>
                 <div class="center-controls"><div class="info-group" id="ui_dateGroup">새 업무 기록 작성 중...</div></div>
@@ -351,27 +360,26 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxREd-loZ_nIJwXrSO7toaUey_x4b-IgT6YFEiDVIO_HGpZkLttWxF_d2Z38ZUZHJz8/exec"; 
     const NOTIFY_GAS_URL = "https://script.google.com/macros/s/AKfycbwI7eeWH1ySyquvLOxqcWjQ86RYjSiXvFlZSZ-NM_LA0KCtDWENrSH1k2gBKdmhZejDsg/exec";
 
-    // ⭐️ 파이어베이스 설정 (여기에 복사한 코드를 덮어쓰세요) ⭐️
-const firebaseConfig = {
-  apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
-  authDomain: "knc-tri-connect.firebaseapp.com",
-  projectId: "knc-tri-connect",
-  storageBucket: "knc-tri-connect.firebasestorage.app",
-  messagingSenderId: "1021961204804",
-  appId: "1:1021961204804:web:c885bff0446407798df811"
-};
+    // ⭐️ 파이어베이스 설정 ⭐️
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
+      authDomain: "knc-tri-connect.firebaseapp.com",
+      projectId: "knc-tri-connect",
+      storageBucket: "knc-tri-connect.firebasestorage.app",
+      messagingSenderId: "1021961204804",
+      appId: "1:1021961204804:web:c885bff0446407798df811"
+    };
 
     let fdb = null;
     if (firebaseConfig.apiKey) {
         firebase.initializeApp(firebaseConfig);
         fdb = firebase.database();
     }
-    // -------------------------------------------------------------
 
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // ⭐️ 다국어 UI 딕셔너리 (누락되었던 번역 항목 완벽 적용) ⭐️
+    // Fix 3: 푸시 알림 관련 번역 데이터 추가
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -379,7 +387,8 @@ const firebaseConfig = {
             replyToMsg: "이 메시지에 답장", delMsg: "메시지 삭제", editEvent: "일정 수정", evtDetails: "일정 내용", cancel: "취소", manageEvent: "일정 관리", newEvtPH: "새로운 일정 입력...", addBtn: "추가", myRecordList: "내 기록 목록", searchPH: "검색어 입력...", createRoom: "방 만들기", inviteLabel: "초대 멤버 선택:", roomNamePH: "방 이름을 입력하세요", memberTitle: "접속 상태 & 1:1 채팅", deleteRoom: "방삭제",
             alertInput: "내용을 입력하세요.", alertSaved: "저장되었습니다!", confirmDel: "삭제하시겠습니까?", alertBaseRoom: "기본 방은 삭제할 수 없습니다.", confirmRoomDel: "이 방을 완전히 삭제하시겠습니까? 모든 팀원의 목록에서도 삭제됩니다.", alertRoomName: "방 이름을 입력하세요.", alertBigFile: "너무 큰 파일입니다. 5MB 이하를 권장합니다.", alertLimit: "⚠️ 데이터 용량 한계(약 5만자)를 초과하여 저장할 수 없습니다.\n사진을 지우거나 메모를 두 개로 나누어 저장해 주십시오.", alertNetErr: "인터넷 연결이 원활하지 않아 서버 저장에 실패했습니다.", alert2MB: "2MB 이하의 파일만 첨부 가능합니다.", confirmMsgDel: "이 메시지를 삭제하시겠습니까?", alertEvtInput: "일정 내용을 입력하세요.", confirmEvtDel: "이 일정을 삭제하시겠습니까?", promptEvtEdit: "일정을 수정하세요:",
             deletedMsg: "🚫 삭제된 메시지입니다.", alertCopy: "복사 완료!", alertTransErr: "번역 에러", replyingTo: "님에게 답장 중...",
-            memoPH: "현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)"
+            memoPH: "현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)",
+            btnPush: "🔔 스마트폰 알림 켜기", pushSuccess: "✅ [성공] 서버에 알림 주소가 완벽히 등록되었습니다!", pushFailConn: "❌ [연결 실패] ", pushFailToken: "❌ [토큰 실패] ", pushAllow: "알림 권한을 허용해 주셔야 합니다."
         },
         vi: { 
             list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch", titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Enter: Gửi / Shift+Enter: Xuống dòng", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều",
@@ -387,7 +396,8 @@ const firebaseConfig = {
             replyToMsg: "Trả lời tin nhắn này", delMsg: "Xóa tin nhắn", editEvent: "Sửa sự kiện", evtDetails: "Nội dung sự kiện", cancel: "Hủy", manageEvent: "Quản lý sự kiện", newEvtPH: "Nhập sự kiện mới...", addBtn: "Thêm", myRecordList: "Danh sách của tôi", searchPH: "Tìm kiếm...", createRoom: "Tạo phòng", inviteLabel: "Chọn thành viên mời:", roomNamePH: "Nhập tên phòng", memberTitle: "Trạng thái & Chat 1:1", deleteRoom: "Xóa phòng",
             alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập tin quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
             deletedMsg: "🚫 Tin nhắn đã bị xóa.", alertCopy: "Đã sao chép!", alertTransErr: "Lỗi dịch", replyingTo: "Đang trả lời",
-            memoPH: "Vui lòng ghi lại chi tiết công việc hiện trường... (Có thể sao chép và dán hình ảnh)"
+            memoPH: "Vui lòng ghi lại chi tiết công việc hiện trường... (Có thể sao chép và dán hình ảnh)",
+            btnPush: "🔔 Bật thông báo", pushSuccess: "✅ [Thành công] Đã đăng ký nhận thông báo!", pushFailConn: "❌ [Lỗi kết nối] ", pushFailToken: "❌ [Lỗi Token] ", pushAllow: "Vui lòng cho phép quyền thông báo."
         },
         en: { 
             list: "List", new: "New", save: "Save", del: "Delete", navMemo: "Memo(Trans)", navChat: "Messenger", navCal: "Calendar", titleMemo: "Personal Memo", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Enter: Send / Shift+Enter: Newline", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM",
@@ -395,7 +405,8 @@ const firebaseConfig = {
             replyToMsg: "Reply to this message", delMsg: "Delete message", editEvent: "Edit Event", evtDetails: "Event details", cancel: "Cancel", manageEvent: "Manage Event", newEvtPH: "New event...", addBtn: "Add", myRecordList: "My Records", searchPH: "Search...", createRoom: "Create Room", inviteLabel: "Select members to invite:", roomNamePH: "Enter room name", memberTitle: "Online Status & 1:1 Chat", deleteRoom: "Delete Room",
             alertInput: "Please enter content.", alertSaved: "Saved successfully!", confirmDel: "Are you sure you want to delete?", alertBaseRoom: "The default room cannot be deleted.", confirmRoomDel: "Are you sure you want to completely delete this room? It will be removed from all members' lists.", alertRoomName: "Please enter a room name.", alertBigFile: "File is too large. Under 5MB recommended.", alertLimit: "⚠️ Data limit exceeded (approx 50,000 chars) cannot be saved.\nPlease delete photos or split the memo in two.", alertNetErr: "Failed to save to server due to poor internet connection.", alert2MB: "Only files under 2MB can be attached.", confirmMsgDel: "Are you sure you want to delete this message?", alertEvtInput: "Please enter event details.", confirmEvtDel: "Are you sure you want to delete this event?", promptEvtEdit: "Edit the event:",
             deletedMsg: "🚫 Deleted message.", alertCopy: "Copied!", alertTransErr: "Translation Error", replyingTo: "Replying to",
-            memoPH: "Please record the field work details... (Image copy & paste available)"
+            memoPH: "Please record the field work details... (Image copy & paste available)",
+            btnPush: "🔔 Enable Push", pushSuccess: "✅ [Success] Push notification registered!", pushFailConn: "❌ [Connection Error] ", pushFailToken: "❌ [Token Error] ", pushAllow: "Please allow notification permissions."
         }
     };
 
@@ -407,13 +418,11 @@ const firebaseConfig = {
     
     const allUsers = [...GROUPS.ko, ...GROUPS.vi, ...GROUPS.en];
     
-    // ⭐️ [복구됨] 안전한 로컬 스토리지 초기화 (서버 지연 시 방 목록 증발 방지)
     let savedRooms = [];
     try { savedRooms = JSON.parse(localStorage.getItem('knc_rooms_v13')) || []; } catch(e){}
     let chatRooms = savedRooms.length > 0 ? savedRooms : [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
     let currentRoomId = 'room_gen', chatHistory = [], events = [], memos = []; 
 
-    // 파이어베이스 실시간 동기화 함수
     function initFirebaseSync() {
         if(!fdb) return;
 
@@ -426,9 +435,12 @@ const firebaseConfig = {
             const newServerChats = incomingChats.filter(c => !currentIds.has(c.id)); 
             const hasNewFromOthers = newServerChats.some(c => c.sender !== currentUser);
             
-            if (!isInitialChatSync && hasNewFromOthers && appMode !== 'chat') { 
-                hasUnreadChat = true; 
-                alertSound.play().catch(e=>{}); 
+            // Fix 7: 현재 창이 가려져 있거나, 채팅 모드가 아닐 때만 알림 발생 (보고 있을 땐 울리지 않음)
+            if (!isInitialChatSync && hasNewFromOthers) { 
+                if (appMode !== 'chat' || document.hidden) {
+                    hasUnreadChat = true; 
+                    alertSound.play().catch(e=>{}); 
+                }
             }
 
             chatHistory = incomingChats.sort((a, b) => a.id - b.id);
@@ -487,7 +499,6 @@ const firebaseConfig = {
         });
     }
 
-    // 기존 구글 시트는 이제 메모와 달력만 당겨옴
     async function syncDataGAS() {
         if(!currentUser) return;
         try {
@@ -603,9 +614,7 @@ const firebaseConfig = {
         document.getElementById('chatInput').placeholder = d.chatPH;
         document.getElementById('ui_btnSend').innerText = d.btnSend;
         
-        // 버튼 번역 적용
         document.getElementById('ui_btnCreateRoom').innerText = d.btnCreateRoom;
-        // 메모 placeholder 번역 적용
         document.getElementById('mainText').placeholder = d.memoPH;
 
         document.getElementById('ui_createRoomTitle').innerText = d.createRoom;
@@ -631,6 +640,10 @@ const firebaseConfig = {
         document.getElementById('newRoomNameInput').placeholder = d.roomNamePH;
         document.getElementById('btnDeleteRoom').innerText = d.deleteRoom;
         document.getElementById('ui_memberSidebarTitle').innerText = d.memberTitle;
+
+        // Fix 3: 버튼 번역 적용
+        const btnPush = document.getElementById('btnEnablePush');
+        if(btnPush) btnPush.innerText = d.btnPush;
 
         const sb = document.getElementById('memberSidebar');
         if(appMode === 'chat') document.getElementById('btnToggleMemberList').innerText = sb.classList.contains('open') ? d.btnCloseMem : d.btnMem;
@@ -902,13 +915,17 @@ const firebaseConfig = {
         let notifyText = txt;
         if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
-        const membersStr = curRoom ? curRoom.members.join(",") : currentUser;
         
-        fetch(NOTIFY_GAS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
-        }).catch(err => {});
+        // Fix 4 & Fix 6: 본인(보내는 사람)을 알림 수신 대상에서 명시적으로 제외 (중복 문제도 함께 방지)
+        const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
+        if (receivers.length > 0) {
+            const membersStr = receivers.join(",");
+            fetch(NOTIFY_GAS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
+            }).catch(err => {});
+        }
         
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
@@ -1004,7 +1021,6 @@ const firebaseConfig = {
     /* 📅 달력 모드 */
     let calSelectedDate = null; let currentDate = new Date();
     
-    // ⭐️ 달력 년/월 번역 강제 적용 ⭐️
     function renderCalendar() {
         const year = currentDate.getFullYear(); const month = currentDate.getMonth();
         
@@ -1064,7 +1080,6 @@ const firebaseConfig = {
         renderCalModalEvents(); renderCalendar();
     }
 
-    // 똑똑한 라우팅 함수
     function openChatAndGoToUnread() {
         if (!currentUser) return;
         let unreadRoomId = null;
@@ -1095,22 +1110,19 @@ const firebaseConfig = {
     });
 
 </script> 
-<!-- 📱 모바일 웹 푸시 알림 전용 독립 코드 (PC 버전 영향 제로) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
-
-<!-- 스마트폰에서만 보이는 알림 켜기 버튼 -->
-<button id="btnEnablePush" onclick="enableWebPush()" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999; padding:12px 24px; background:#4CAF50; color:#fff; border:none; border-radius:30px; font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-  🔔 스마트폰 알림 켜기
-</button>
 
 <script>
   if (!navigator.userAgent.includes("AutoHotkey")) {
     setTimeout(() => {
-      document.getElementById('btnEnablePush').style.display = 'block';
+      // 권한이 없거나 이전에 누르지 않은 경우에만 표시
+      if (Notification.permission !== 'granted' || !localStorage.getItem('knc_push_enabled')) {
+        document.getElementById('btnEnablePush').style.display = 'inline-block';
+      }
     }, 3000);
   }
 
   function enableWebPush() {
+    const d = UI_DICT[selectedLang];
     Notification.requestPermission().then((permission) => {
       if (permission === 'granted') {
         const messaging = firebase.messaging();
@@ -1123,28 +1135,27 @@ const firebaseConfig = {
           }).then((currentToken) => {
             if (currentToken) {
               
-              // 1. 내 이름 확실히 가져오기 (변수가 없으면 알 수 없음으로라도 저장)
               let myName = typeof currentUser !== 'undefined' ? currentUser : "Roy (KR)";
 
-              // 2. 파이어베이스 DB 저장 (fdb 변수 대신 절대 실패하지 않는 전체 명령어 사용)
               firebase.database().ref('tokens/' + myName).set(currentToken)
               .then(() => {
-                alert("✅ [성공] 서버에 알림 주소가 완벽히 등록되었습니다!");
+                localStorage.setItem('knc_push_enabled', 'true');
+                alert(d.pushSuccess);
                 document.getElementById('btnEnablePush').style.display = 'none';
               })
               .catch((dbErr) => {
-                alert("❌ [저장 실패] DB 권한 또는 연결 에러: " + dbErr.message);
+                alert(d.pushFailConn + dbErr.message);
               });
 
             }
           }).catch((err) => {
-            alert("❌ [토큰 실패] " + err.message);
+            alert(d.pushFailToken + err.message);
           });
         }).catch((err) => {
-          alert("❌ [연결 실패] 서비스워커 에러: " + err.message);
+          alert(d.pushFailConn + err.message);
         });
       } else {
-        alert("알림 권한을 허용해 주셔야 합니다.");
+        alert(d.pushAllow);
       }
     });
   }
