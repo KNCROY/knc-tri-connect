@@ -1,8 +1,6 @@
-// 1. 파이어베이스 핵심 라이브러리 불러오기 (HTML의 <script> 태그 역할을 대신함)
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
 
-// 2. ⭐️ 팀장님의 파이어베이스 설정값 (누락되었던 databaseURL 정식 추가) ⭐️
 const firebaseConfig = {
   apiKey: "AIzaSyDtrcEP56bYdLdbQc6epI-BOtl4M9gl5us",
   authDomain: "knc-tri-connect.firebaseapp.com",
@@ -13,18 +11,32 @@ const firebaseConfig = {
   appId: "1:1021961204804:web:c885bff0446407798df811"
 };
 
-// 3. 파이어베이스 초기화 및 백그라운드 수신 대기
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[firebase-messaging-sw.js] 백그라운드 메시지 수신: ', payload);
-  
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body
-    // ⭐️ 정확한 조치: 에러를 유발하던 icon 속성을 완전히 삭제하여 순수 텍스트 알림만 강제 출력되도록 수정함
+// 🚀 파이어베이스의 불안정한 기능을 버리고, 브라우저 순정 푸시 이벤트로 직결!
+self.addEventListener('push', function(event) {
+  let title = "📩 [KNC] 알림";
+  let body = "새 메시지가 도착했습니다.";
+
+  if (event.data) {
+    const payload = event.data.json();
+    if (payload.notification) {
+      title = payload.notification.title;
+      body = payload.notification.body;
+    }
+  }
+
+  // 아이콘 에러 원천 차단
+  const options = {
+    body: body
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// 🚀 알림을 클릭하면 KNC 앱으로 바로 이동하게 만드는 보너스 기능
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  event.waitUntil(clients.openWindow('https://kncroy.github.io/knc-tri-connect/'));
 });
