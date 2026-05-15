@@ -911,13 +911,13 @@
     let isSendingMessage = false;
 
     async function sendChatMessage() {
-        if (isSendingMessage) return; // 이미 전송 중이면 무시
+        if (isSendingMessage) return; 
         
         const txt = document.getElementById('chatInput').value.trim(); 
         if (!txt && !curChatMedia) return;
         
         isSendingMessage = true; 
-        setTimeout(() => { isSendingMessage = false; }, 800); // 0.8초 잠금 유지
+        setTimeout(() => { isSendingMessage = false; }, 800); 
 
         const mid = Date.now().toString();
         const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, replyTo: replyTarget, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
@@ -932,12 +932,21 @@
         let notifyText = txt;
         if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         
-        // ⭐️ 완벽하게 원복된 알림 전송 (구글 서버 정상 동작 및 발신자 제외를 위해 정석대로 전송) ⭐️
-        fetch(NOTIFY_GAS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(notifyText)
-        }).catch(err => {});
+        const curRoom = chatRooms.find(r => r.id === currentRoomId);
+        
+        // ⭐️ [중요 보완] ⭐️
+        // 수신자 명단 추출 시, 본인을 제외한 명단(receivers)을 콤마(,)로 연결하여
+        // 반드시 "수신자명단##메시지내용" 형태로 묶어서 구글 서버(GAS)에 전달해야 서버가 정상적으로 파싱합니다.
+        const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
+        if (receivers.length > 0) {
+            const membersStr = receivers.join(",");
+            
+            fetch(NOTIFY_GAS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + notifyText)
+            }).catch(err => {});
+        }
         
         if (txt) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
@@ -1126,11 +1135,9 @@
 <script>
   if (!navigator.userAgent.includes("AutoHotkey")) {
     setTimeout(() => {
-      // 권한이 없거나 최초 등록을 안 한 경우에만 버튼 표시
       if (Notification.permission !== 'granted' || !localStorage.getItem('knc_push_enabled')) {
         document.getElementById('btnEnablePush').style.display = 'inline-block';
       } else {
-        // 화면을 켜놓고 보고 있을 때 상단 푸시 알림이 안 내려오게 가로채기 차단 (포그라운드 무음 처리)
         if (typeof firebase !== "undefined" && firebase.messaging) {
             try {
                 firebase.messaging().onMessage((payload) => {
@@ -1158,27 +1165,22 @@
               
               let myName = typeof currentUser !== 'undefined' ? currentUser : "Roy (KR)";
 
-              // ⭐️ 파이어베이스 DB를 뒤져서 과거 테스트했던 이름들의 '중복 토큰'을 모조리 자동 청소합니다!
               firebase.database().ref('tokens').once('value').then(snapshot => {
                   const tokensData = snapshot.val() || {};
                   const updates = {};
                   
-                  // 현재 핸드폰 토큰과 똑같은 토큰이 저장된 과거 이름들을 찾아서 삭제(null) 처리
                   for (const [name, token] of Object.entries(tokensData)) {
                       if (token === currentToken) {
                           updates[name] = null; 
                       }
                   }
                   
-                  // 방금 깨끗하게 청소한 뒤, 오직 '현재 내 이름 하나'만 정확하게 등록
                   updates[myName] = currentToken; 
                   
-                  // 업데이트 실행
                   firebase.database().ref('tokens').update(updates)
                   .then(() => {
                     localStorage.setItem('knc_push_enabled', 'true');
                     
-                    // 등록 성공 후 포그라운드 가로채기 즉시 활성화
                     firebase.messaging().onMessage((payload) => {
                         console.log("포그라운드 알림 수신됨 (화면 표시 안함):", payload);
                     });
