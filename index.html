@@ -20,17 +20,17 @@
             --accent-color: #1c2833; --accent-hover: #2c3e50; --border-color: #e2e8f0; --border-radius: 8px;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.05); --chat-bg: #b2c7d9; --my-bubble: #ffeb33; --other-bubble: #ffffff;     
         }
-        /* Fix 2: PC 최소 창 크기 고정 및 Fix 5: 화면 스크롤 문제 해결 (100vh 및 Flex 적용) */
+        /* PC 최소 창 크기 고정 (Fix 2) */
         body { 
             font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-weight: 300; 
             background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; 
             display: flex; justify-content: center; letter-spacing: -0.3px; font-size: 14px; 
-            min-width: 480px; min-height: 700px; /* PC창 크기 제한 */
+            min-width: 480px; min-height: 700px;
             height: 100vh; overflow: auto; box-sizing: border-box;
         }
         .main-wrapper { max-width: 1000px; width: 100%; transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%;}
         
-        #globalAppTitle { display: none; text-align: center; font-size: 1.4rem; font-weight: 800; color: var(--accent-color); margin-bottom: 15px; letter-spacing: 0.5px; text-transform: uppercase;}
+        #globalAppTitle { display: none; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; color: var(--accent-color); margin-bottom: 15px; letter-spacing: 0.5px; text-transform: uppercase;}
 
         /* 로그인 모달 */
         #lockOverlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(245, 245, 247, 0.98); z-index: 100; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: flex-start; flex-direction: column; padding: 50px 20px; overflow-y: auto;}
@@ -60,7 +60,6 @@
         .new-badge { color: #ef4444; font-size: 0.75rem; font-weight: 800; margin-left: 4px; animation: blinkAlert 1s infinite; text-shadow: 0 0 2px rgba(255,255,255,0.5); }
         .nav-btn.active .new-badge { color: #ffeb33; }
 
-        /* Fix 5: flex 1 과 min-height 0 을 주어 자동맞춤 (입력창 스크롤 없이 보임) */
         .content-area { display: flex; flex-direction: column; background: var(--surface-color); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); flex: 1; min-height: 0; box-sizing: border-box; overflow: hidden; position: relative;}
         .app-mode-view { display: none; flex-direction: column; flex: 1; min-height: 0; }
         h2.mode-title { text-align: center; color: var(--accent-color); font-size: 1.2rem; font-weight: 600; margin: 0 0 15px 0;}
@@ -278,7 +277,11 @@
 </div>
 
 <div class="main-wrapper">
-    <div id="globalAppTitle">KNC Tri-Connect APP Ver1.01</div>
+    
+    <div id="globalAppTitle">
+        <img src="logo.png" alt="KNC Logo" style="height:28px; vertical-align:middle; margin-right:10px; margin-bottom:4px;">
+        <span style="vertical-align:middle;">KNC Tri-Connect APP Ver1.01</span>
+    </div>
 
     <div id="lockOverlay">
         <h3 id="ui_lockTitle">KNC Tri-Connect APP Ver1.01</h3>
@@ -294,8 +297,8 @@
     <div class="user-bar" id="topUserBar">
         <div class="welcome-msg" id="welcomeMsg"></div>
         <div class="nav-buttons">
-            <button class="nav-btn" id="navBtnChat" onclick="setAppMode('chat')">메신저 <span id="chatNewBadge" class="new-badge" style="display:none;">NEW!</span></button>
-            <button class="nav-btn active" id="navBtnMemo" onclick="setAppMode('memo')">개인수첩(번역)</button>
+            <button class="nav-btn active" id="navBtnChat" onclick="setAppMode('chat')">메신저 <span id="chatNewBadge" class="new-badge" style="display:none;">NEW!</span></button>
+            <button class="nav-btn" id="navBtnMemo" onclick="setAppMode('memo')">개인수첩(번역)</button>
             <button class="nav-btn" id="navBtnCal" onclick="setAppMode('calendar')">달력</button>
         </div>
         <button class="btn-logout" id="ui_btnLogout" onclick="logout()">로그아웃</button>
@@ -304,11 +307,7 @@
     <div class="content-area">
         
         <div id="memoModeUI" class="app-mode-view">
-            <div style="text-align:center; margin-bottom:15px;">
-                <h2 class="mode-title" style="display:inline; margin:0;" id="ui_memoLabel">개인수첩(번역)</h2>
-                <button id="btnEnablePush" onclick="enableWebPush()" style="display:none; margin-left:10px; padding:4px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:15px; cursor:pointer; vertical-align:middle; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1);">🔔 스마트폰 알림 켜기</button>
-            </div>
-            
+            <h2 class="mode-title" id="ui_memoLabel">개인수첩(번역)</h2>
             <div class="top-controls">
                 <div class="left-controls"><button class="action-btn" id="ui_btnList" onclick="toggleSidebar()">목록 열기</button></div>
                 <div class="center-controls"><div class="info-group" id="ui_dateGroup">새 업무 기록 작성 중...</div></div>
@@ -321,7 +320,10 @@
         </div>
 
         <div id="chatModeUI" class="app-mode-view">
-            <h2 class="mode-title" id="ui_chatTitle">KNC Messenger</h2>
+            <div style="text-align:center; margin-bottom:10px;">
+                <h2 class="mode-title" style="display:inline; margin:0;" id="ui_chatTitle">KNC Messenger</h2>
+                <button id="btnEnablePush" onclick="enableWebPush()" style="display:none; margin-left:10px; padding:4px 10px; font-size:0.75rem; background:#4CAF50; color:#fff; border:none; border-radius:15px; cursor:pointer; vertical-align:middle; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1);">🔔 스마트폰 알림 켜기</button>
+            </div>
             <div class="chat-room-header">
                 <select id="chatRoomSelect" onchange="changeChatRoom()"></select>
                 <div class="chat-room-actions">
@@ -379,7 +381,7 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // Fix 3: 푸시 알림 관련 번역 데이터 추가
+    // 알림 및 푸시 관련 번역 데이터 추가
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -394,7 +396,7 @@
             list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch", titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Enter: Gửi / Shift+Enter: Xuống dòng", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều",
             days: ['CN','T2','T3','T4','T5','T6','T7'],
             replyToMsg: "Trả lời tin nhắn này", delMsg: "Xóa tin nhắn", editEvent: "Sửa sự kiện", evtDetails: "Nội dung sự kiện", cancel: "Hủy", manageEvent: "Quản lý sự kiện", newEvtPH: "Nhập sự kiện mới...", addBtn: "Thêm", myRecordList: "Danh sách của tôi", searchPH: "Tìm kiếm...", createRoom: "Tạo phòng", inviteLabel: "Chọn thành viên mời:", roomNamePH: "Nhập tên phòng", memberTitle: "Trạng thái & Chat 1:1", deleteRoom: "Xóa phòng",
-            alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập tin quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
+            alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập cải quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
             deletedMsg: "🚫 Tin nhắn đã bị xóa.", alertCopy: "Đã sao chép!", alertTransErr: "Lỗi dịch", replyingTo: "Đang trả lời",
             memoPH: "Vui lòng ghi lại chi tiết công việc hiện trường... (Có thể sao chép và dán hình ảnh)",
             btnPush: "🔔 Bật thông báo", pushSuccess: "✅ [Thành công] Đã đăng ký nhận thông báo!", pushFailConn: "❌ [Lỗi kết nối] ", pushFailToken: "❌ [Lỗi Token] ", pushAllow: "Vui lòng cho phép quyền thông báo."
@@ -410,7 +412,8 @@
         }
     };
 
-    let currentUser = null, selectedLang = 'ko', appMode = 'memo', manualLang = null, selectedLoginUser = '', selectedLoginGroupLang = '';
+    // 처음 화면이 메신저로 켜지도록 변수 초기값 'chat' (Fix 1)
+    let currentUser = null, selectedLang = 'ko', appMode = 'chat', manualLang = null, selectedLoginUser = '', selectedLoginGroupLang = '';
     let hasUnreadChat = false, replyTarget = null;
     let actionMsgTarget = null; 
     let editCalId = null; 
@@ -435,7 +438,7 @@
             const newServerChats = incomingChats.filter(c => !currentIds.has(c.id)); 
             const hasNewFromOthers = newServerChats.some(c => c.sender !== currentUser);
             
-            // Fix 7: 현재 창이 가려져 있거나, 채팅 모드가 아닐 때만 알림 발생 (보고 있을 땐 울리지 않음)
+            // 화면 켜져 있을 땐 PC 알림음 안울리게 (Fix 5)
             if (!isInitialChatSync && hasNewFromOthers) { 
                 if (appMode !== 'chat' || document.hidden) {
                     hasUnreadChat = true; 
@@ -538,9 +541,12 @@
         if (savedUser && savedLang) {
             currentUser = savedUser; selectedLang = savedLang;
             document.getElementById('lockOverlay').style.display = 'none';
-            document.getElementById('globalAppTitle').style.display = 'block';
+            document.getElementById('globalAppTitle').style.display = 'flex';
             document.getElementById('topUserBar').style.display = 'flex';
             applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
+            
+            // 처음 로그인/자동로그인 시 메신저로 고정 (Fix 1)
+            setAppMode('chat');
             
             initFirebaseSync(); 
             pingOnline(); setInterval(pingOnline, 30000); 
@@ -562,8 +568,11 @@
                 currentUser = selectedLoginUser; selectedLang = manualLang ? manualLang : selectedLoginGroupLang;
                 localStorage.setItem('knc_auto_login_user', currentUser); localStorage.setItem('knc_auto_login_lang', selectedLang);
                 document.getElementById('pwModalOverlay').style.display = 'none'; document.getElementById('lockOverlay').style.display = 'none';
-                document.getElementById('globalAppTitle').style.display = 'block'; document.getElementById('topUserBar').style.display = 'flex';
+                document.getElementById('globalAppTitle').style.display = 'flex'; document.getElementById('topUserBar').style.display = 'flex';
                 applyAppLanguage(); startNewMemo(); initChatRooms(); renderCalendar(); setOnlineStatus(true);
+                
+                // 로그인 시 메신저로 고정 (Fix 1)
+                setAppMode('chat');
                 
                 initFirebaseSync();
                 pingOnline(); setInterval(pingOnline, 30000); 
@@ -641,7 +650,7 @@
         document.getElementById('btnDeleteRoom').innerText = d.deleteRoom;
         document.getElementById('ui_memberSidebarTitle').innerText = d.memberTitle;
 
-        // Fix 3: 버튼 번역 적용
+        // 알림 버튼 번역 적용
         const btnPush = document.getElementById('btnEnablePush');
         if(btnPush) btnPush.innerText = d.btnPush;
 
@@ -916,7 +925,7 @@
         if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
         
-        // Fix 4 & Fix 6: 본인(보내는 사람)을 알림 수신 대상에서 명시적으로 제외 (중복 문제도 함께 방지)
+        // 발신자(본인)를 리스트에서 완벽하게 제외 (본인 알림 중복 루프 방지) (Fix 4)
         const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
         if (receivers.length > 0) {
             const membersStr = receivers.join(",");
@@ -1114,9 +1123,19 @@
 <script>
   if (!navigator.userAgent.includes("AutoHotkey")) {
     setTimeout(() => {
-      // 권한이 없거나 이전에 누르지 않은 경우에만 표시
+      // 권한이 없거나 최초 등록을 안 한 경우에만 버튼 표시
       if (Notification.permission !== 'granted' || !localStorage.getItem('knc_push_enabled')) {
         document.getElementById('btnEnablePush').style.display = 'inline-block';
+      } else {
+        // 이미 권한이 있는 경우: 화면을 켜놓고 보고 있을 때 안드로이드 상단 푸시가 내려오지 않도록 차단
+        if (typeof firebase !== "undefined" && firebase.messaging) {
+            try {
+                firebase.messaging().onMessage((payload) => {
+                    // onMessage 핸들러가 있으면, 현재 탭이 활성화(포그라운드) 상태일 때 시스템 푸시를 억제합니다.
+                    console.log("포그라운드 알림 수신됨 (화면 표시 안함):", payload);
+                });
+            } catch(e) {}
+        }
       }
     }, 3000);
   }
@@ -1140,6 +1159,12 @@
               firebase.database().ref('tokens/' + myName).set(currentToken)
               .then(() => {
                 localStorage.setItem('knc_push_enabled', 'true');
+                
+                // 등록 완료 후에도 화면 켜짐 시 알림 가로채기 활성화
+                firebase.messaging().onMessage((payload) => {
+                    console.log("포그라운드 알림 수신됨 (화면 표시 안함):", payload);
+                });
+
                 alert(d.pushSuccess);
                 document.getElementById('btnEnablePush').style.display = 'none';
               })
