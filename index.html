@@ -9,6 +9,10 @@
     <link rel="icon" href="https://i.postimg.cc/htkNLgmR/logo.png">
     <meta name="theme-color" content="#1c2833">
     
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KNC Tri">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
@@ -386,7 +390,7 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "Ms.Choi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // ⭐️ 번역 사전에 btnEdit("수정") 버튼 항목 추가 ⭐️
+    // ⭐️ 번역 사전에 btnEdit("수정") 버튼 항목 추가 유지
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", btnEdit: "수정", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -430,12 +434,29 @@
     let chatRooms = savedRooms.length > 0 ? savedRooms : [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
     let currentRoomId = 'room_gen', chatHistory = [], events = [], memos = []; 
 
+    // ⭐️ [추가된 기능] 채팅방 (🔴 n) 뱃지 실시간 업데이트 함수 ⭐️
+    function updateRoomListUI() {
+        const sel = document.getElementById('chatRoomSelect');
+        if(!sel) return;
+        sel.innerHTML = '';
+        chatRooms.forEach(r => {
+            if (r.id === 'room_gen' || r.members.includes(currentUser)) {
+                // 해당 방에 내가 읽지 않은 남의 메시지가 몇 개인지 계산
+                const unreadCount = chatHistory.filter(m => m.roomId === r.id && m.sender !== currentUser && m.readBy && !m.readBy.includes(currentUser)).length;
+                const unreadMark = unreadCount > 0 ? ` (🔴 ${unreadCount})` : '';
+                sel.innerHTML += `<option value="${r.id}">${r.name}${unreadMark}</option>`;
+            }
+        });
+        sel.value = currentRoomId; 
+        document.getElementById('btnDeleteRoom').style.display = currentRoomId === 'room_gen' ? 'none' : 'inline-block';
+    }
+
     function openChatRoom(targetRoomId) {
         if (!chatRooms.find(r => r.id === targetRoomId)) return;
         currentRoomId = targetRoomId;
-        document.getElementById('chatRoomSelect').value = currentRoomId;
-        // ⭐️ [수정사항 1] 누군가 방을 만들었을 때 알림을 클릭하면 강제로 방에 편입되는 버그(로직) 제거
+        // ⭐️ [수정사항] 누군가 방을 만들었을 때 강제로 방에 편입되는 버그 제거 및 뱃지 업데이트
         setAppMode('chat');
+        updateRoomListUI();
     }
 
     function initFirebaseSync() {
@@ -452,7 +473,6 @@
             let shouldNotify = false;
             let notifyMsg = null;
 
-            // ⭐️ [수정사항 1] 내가 속하지 않은 방의 메시지는 무시하도록 필터링 추가
             newServerChats.forEach(c => {
                 const room = chatRooms.find(r => r.id === c.roomId);
                 const isMyRoom = c.roomId === 'room_gen' || (room && room.members.includes(currentUser));
@@ -489,6 +509,27 @@
             }
 
             chatHistory = incomingChats.sort((a, b) => a.id - b.id);
+            
+            // ⭐️ [추가된 기능] 앱을 켰을 때(또는 알림 누르고 들어올 때) 가장 최근 안 읽은 방으로 자동 순간이동 ⭐️
+            if (isInitialChatSync) {
+                let unreadRoomId = null;
+                for (let i = chatHistory.length - 1; i >= 0; i--) {
+                    const m = chatHistory[i];
+                    if (m.sender !== currentUser && m.readBy && !m.readBy.includes(currentUser)) {
+                        const room = chatRooms.find(r => r.id === m.roomId);
+                        if (m.roomId === 'room_gen' || (room && room.members.includes(currentUser))) {
+                            unreadRoomId = m.roomId; break;
+                        }
+                    }
+                }
+                if (unreadRoomId && currentRoomId !== unreadRoomId) {
+                    currentRoomId = unreadRoomId;
+                }
+            }
+
+            // 채팅 내역이 로드될 때 드롭다운의 뱃지도 실시간으로 업데이트
+            updateRoomListUI();
+
             isInitialChatSync = false; 
             if(appMode === 'chat') renderChatUI(false);
             applyAppLanguage();
@@ -832,19 +873,16 @@
     }
     
     function initChatRooms() { 
-        const sel = document.getElementById('chatRoomSelect'); sel.innerHTML = ''; 
-        chatRooms.forEach(r => { if (r.id === 'room_gen' || r.members.includes(currentUser)) { sel.innerHTML += `<option value="${r.id}">${r.name}</option>`; } }); 
-        let validRoom = Array.from(sel.options).find(opt => opt.value === currentRoomId);
-        if(!validRoom) currentRoomId = 'room_gen';
-        sel.value = currentRoomId; 
-        document.getElementById('btnDeleteRoom').style.display = currentRoomId === 'room_gen' ? 'none' : 'inline-block';
+        let validRoom = Array.from(document.getElementById('chatRoomSelect').options).find(opt => opt.value === currentRoomId);
+        if(!validRoom && document.getElementById('chatRoomSelect').options.length > 0) currentRoomId = 'room_gen';
+        updateRoomListUI();
     }
 
+    // ⭐️ [수정사항] 타인이 초대한 방에 멋대로 빨려 들어가는 버그 제거
     function changeChatRoom() { 
         currentRoomId = document.getElementById('chatRoomSelect').value; 
-        // ⭐️ [수정사항 1] 누군가 방을 만들었을 때 강제로 방에 편입되는 버그(로직) 제거
         renderOnlineStatus(); renderChatUI(true); 
-        document.getElementById('btnDeleteRoom').style.display = currentRoomId === 'room_gen' ? 'none' : 'inline-block';
+        updateRoomListUI();
     }
 
     function deleteCurrentRoom() {
@@ -1068,6 +1106,7 @@
 
         if (needReadSync && lastUnreadMsg) {
             if(fdb) fdb.ref('chats/' + lastUnreadMsg.id).set(lastUnreadMsg);
+            updateRoomListUI(); // 읽음 처리 후 뱃지 업데이트
         }
         if (forceScrollBottom || isNearBottom) { area.scrollTop = area.scrollHeight; }
     }
@@ -1094,7 +1133,7 @@
             const dayEvents = events.filter(e => e.date === dateStr);
             let eventHTML = '';
             
-            // ⭐️ [수정사항 2] 달력 셀에 표시되는 일정 텍스트 앞에 작성자(e.user)가 나오도록 변경 ⭐️
+            // ⭐️ [수정사항 2] 달력 셀에 표시되는 일정 텍스트 앞에 작성자(e.user)가 나오도록 변경
             dayEvents.slice(0, 3).forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.user}: ${e.text}</div>`; });
             if(dayEvents.length > 3) { eventHTML += `<div class="cal-event-text" style="text-align:center; color:#888;">+${dayEvents.length - 3} 더보기</div>`; }
             if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
@@ -1109,7 +1148,7 @@
         const dayEvents = events.filter(e => e.date === calSelectedDate);
         if(dayEvents.length === 0) { list.innerHTML = '<div style="text-align:center; color:#888; padding:20px 0;">등록된 일정이 없습니다.</div>'; return; }
         
-        // ⭐️ [수정사항 3] 달력 일정 목록의 [일정] 버튼을 [수정]으로 깔끔하게 나오도록 UI_DICT의 btnEdit 속성 사용 ⭐️
+        // ⭐️ [수정사항 3] 달력 일정 목록의 [일정] 버튼을 [수정]으로 변경
         dayEvents.forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].btnEdit||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`; });
     }
     async function addNewEvent() {
@@ -1154,6 +1193,11 @@
 </script> 
 
 <script>
+  // ⭐️ 접속하자마자 서비스 워커를 백그라운드에 미리 깔아서 '앱 설치' 팝업 조건 충족 ⭐️
+  if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./firebase-messaging-sw.js');
+  }
+
   setTimeout(() => {
     document.getElementById('btnEnablePush').style.display = 'inline-block';
     if (Notification.permission === 'granted' && typeof firebase !== "undefined" && firebase.messaging) {
