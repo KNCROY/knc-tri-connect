@@ -358,7 +358,7 @@
                     <div class="chat-input-area">
                         <div id="replyPreviewBox"><span><strong id="replySenderText"></strong><br><span id="replyText" style="opacity:0.8;"></span></span><button onclick="cancelReply()">✖</button></div>
                         <div id="emojiPanel"><span onclick="insertEmoji('😀')">😀</span><span onclick="insertEmoji('😂')">😂</span><span onclick="insertEmoji('👍')">👍</span><span onclick="insertEmoji('🙏')">🙏</span><span onclick="insertEmoji('👏')">👏</span><span onclick="insertEmoji('🔥')">🔥</span><span onclick="insertEmoji('✅')">✅</span><span onclick="insertEmoji('🚀')">🚀</span></div>
-                        <div id="chatPreviewBox"></div>
+                        <div class="chat-preview-box" id="chatPreviewBox"></div>
                         <div class="chat-controls"><button class="btn-square" onclick="toggleEmojiPanel()">😀</button><button class="btn-square" onclick="document.getElementById('chatPhotoInput').click()">📷</button><button class="btn-square" onclick="document.getElementById('chatFileInput').click()">📎</button><textarea id="chatInput" class="chat-ta" placeholder="엔터:전송 / Shift+엔터:줄바꿈 (이미지 복사 붙여넣기 가능)"></textarea><button class="btn-send" id="ui_btnSend" onclick="sendChatMessage()">전송</button></div>
                         <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleImageUpload(event, 'chat')">
                         <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="handleChatMedia(event, 'file')">
@@ -461,6 +461,7 @@
         document.getElementById('btnDeleteRoom').style.display = currentRoomId === 'room_gen' ? 'none' : 'inline-block';
     }
 
+    // ⭐️ [수정사항 1] 누군가 방을 만들었을 때 강제로 방에 편입되는 버그(로직) 원천 제거
     function openChatRoom(targetRoomId) {
         if (!chatRooms.find(r => r.id === targetRoomId)) return;
         currentRoomId = targetRoomId;
@@ -887,6 +888,7 @@
         updateRoomListUI();
     }
 
+    // ⭐️ [수정사항 1] 누군가 방을 만들었을 때 강제로 방에 편입되는 버그(로직) 원천 제거
     function changeChatRoom() { 
         currentRoomId = document.getElementById('chatRoomSelect').value; 
         renderOnlineStatus(); renderChatUI(true); 
@@ -1055,8 +1057,14 @@
         if(appMode !== 'chat') return;
         const area = document.getElementById('chatArea'); 
         const isNearBottom = area.scrollHeight - area.scrollTop <= area.clientHeight + 150;
-        area.innerHTML = ""; const curRoom = chatRooms.find(r => r.id === currentRoomId);
-        if(!curRoom) return;
+        area.innerHTML = ""; 
+        const curRoom = chatRooms.find(r => r.id === currentRoomId);
+        
+        // ⭐️ [1차 방어선] 내가 속하지 않은 방이면 메시지를 절대 화면에 그리지 않고 차단!
+        if(!curRoom || (currentRoomId !== 'room_gen' && !curRoom.members.includes(currentUser))) {
+            area.innerHTML = "<div style='text-align:center; padding:30px; color:#888;'>접근 권한이 없는 방입니다.</div>";
+            return;
+        }
 
         let needReadSync = false; let lastUnreadMsg = null;
         let lastDateStr = ""; 
@@ -1146,6 +1154,7 @@
             const dayEvents = events.filter(e => e.date === dateStr);
             let eventHTML = '';
             
+            // ⭐️ [수정사항 2] 달력 셀에 표시되는 일정 텍스트 앞에 작성자(e.user)가 나오도록 변경
             dayEvents.slice(0, 3).forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.user}: ${e.text}</div>`; });
             if(dayEvents.length > 3) { eventHTML += `<div class="cal-event-text" style="text-align:center; color:#888;">+${dayEvents.length - 3} 더보기</div>`; }
             if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
@@ -1193,8 +1202,16 @@
             let unreadRoomId = null;
             for (let i = chatHistory.length - 1; i >= 0; i--) {
                 const m = chatHistory[i];
-                if (m.readBy && !m.readBy.includes(currentUser)) { unreadRoomId = m.roomId; break; }
+                if (m.readBy && !m.readBy.includes(currentUser)) { 
+                    // ⭐️ [2차 방어선] 안 읽은 메시지가 있더라도, '내가 속한 방'인지 먼저 검증!
+                    const room = chatRooms.find(r => r.id === m.roomId);
+                    if (m.roomId === 'room_gen' || (room && room.members.includes(currentUser))) {
+                        unreadRoomId = m.roomId; 
+                        break; 
+                    }
+                }
             }
+            // 검증이 끝난 진짜 내 방으로만 이동
             if (unreadRoomId && currentRoomId !== unreadRoomId) {
                 openChatRoom(unreadRoomId);
             }
