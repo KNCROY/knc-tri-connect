@@ -133,6 +133,13 @@
 
         .chat-input-area { flex: 0 0 auto; background: #fff; padding: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; box-sizing: border-box; width: 100%;}
         
+        /* ⭐️ 추가/수정됨: 첨부 미디어 미리보기 UI 고정 (모바일 화면 밀림 방지) ⭐️ */
+        #chatPreviewBox { display: none; margin-bottom: 10px; align-items: center; justify-content: flex-start; }
+        .chat-preview-item { position: relative; display: inline-block; background: #f8fafc; padding: 5px; border-radius: 8px; border: 1px solid var(--border-color); max-width: 100%; box-sizing: border-box;}
+        .chat-preview-item img { max-height: 120px; max-width: 100%; border-radius: 4px; object-fit: contain; display: block; }
+        .chat-preview-item .btn-remove-media { position: absolute; top: -8px; right: -8px; background: #fff; color: #ef4444; border: 1px solid #ffccd0; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 0; }
+        .chat-preview-file { display: flex; align-items: center; gap: 8px; padding: 5px 10px; font-size: 0.85rem; color: var(--text-main); word-break: break-all; }
+
         #emojiPanel { display: none; gap: 8px; padding: 10px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; font-size: 1.6rem; overflow-y: auto; align-items: center; justify-content: space-around;}
         #emojiPanel span { cursor: pointer; transition: 0.1s; }
         #replyPreviewBox { display: none; padding: 8px 12px; background: #f0f4f8; border-radius: 6px; font-size: 0.85rem; margin-bottom: 8px; position: relative; border-left: 3px solid var(--accent-color); color: #555; align-items: center; justify-content: space-between;}
@@ -210,6 +217,9 @@
             .member-sidebar.open { right: 0; }
             .chat-room-actions { display: flex; width: 100%; justify-content: space-between; margin-top: 10px;}
             .chat-room-header { flex-direction: column; align-items: stretch; }
+            
+            /* ⭐️ 모바일에서는 썸네일을 80px로 더 작게 고정하여 전송 버튼 확보 */
+            .chat-preview-item img { max-height: 80px; } 
         }
     </style>
 </head>
@@ -348,7 +358,7 @@
                     <div class="chat-input-area">
                         <div id="replyPreviewBox"><span><strong id="replySenderText"></strong><br><span id="replyText" style="opacity:0.8;"></span></span><button onclick="cancelReply()">✖</button></div>
                         <div id="emojiPanel"><span onclick="insertEmoji('😀')">😀</span><span onclick="insertEmoji('😂')">😂</span><span onclick="insertEmoji('👍')">👍</span><span onclick="insertEmoji('🙏')">🙏</span><span onclick="insertEmoji('👏')">👏</span><span onclick="insertEmoji('🔥')">🔥</span><span onclick="insertEmoji('✅')">✅</span><span onclick="insertEmoji('🚀')">🚀</span></div>
-                        <div class="chat-preview-box" id="chatPreviewBox"></div>
+                        <div id="chatPreviewBox"></div>
                         <div class="chat-controls"><button class="btn-square" onclick="toggleEmojiPanel()">😀</button><button class="btn-square" onclick="document.getElementById('chatPhotoInput').click()">📷</button><button class="btn-square" onclick="document.getElementById('chatFileInput').click()">📎</button><textarea id="chatInput" class="chat-ta" placeholder="엔터:전송 / Shift+엔터:줄바꿈 (이미지 복사 붙여넣기 가능)"></textarea><button class="btn-send" id="ui_btnSend" onclick="sendChatMessage()">전송</button></div>
                         <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleImageUpload(event, 'chat')">
                         <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="handleChatMedia(event, 'file')">
@@ -454,7 +464,6 @@
     function openChatRoom(targetRoomId) {
         if (!chatRooms.find(r => r.id === targetRoomId)) return;
         currentRoomId = targetRoomId;
-        // ⭐️ [수정사항] 누군가 방을 만들었을 때 강제로 방에 편입되는 버그 제거 및 뱃지 업데이트
         setAppMode('chat');
         updateRoomListUI();
     }
@@ -878,7 +887,6 @@
         updateRoomListUI();
     }
 
-    // ⭐️ [수정사항] 타인이 초대한 방에 멋대로 빨려 들어가는 버그 제거
     function changeChatRoom() { 
         currentRoomId = document.getElementById('chatRoomSelect').value; 
         renderOnlineStatus(); renderChatUI(true); 
@@ -915,10 +923,15 @@
         }; r.readAsDataURL(f); e.target.value = '';
     }
 
+    // ⭐️ [수정사항] 사진 미리보기 시 삭제 버튼 클래스 연결 및 레이아웃 수정
     function showChatMediaPreview() {
         const box = document.getElementById('chatPreviewBox');
-        if(curChatMedia.type === 'image') { box.innerHTML = `<div class="chat-preview-item"><button onclick="curChatMedia=null; document.getElementById('chatPreviewBox').style.display='none'">✖</button><img src="${curChatMedia.data}"></div>`; } 
-        else { box.innerHTML = `<div class="chat-preview-item" style="width:auto; padding:8px 12px; display:flex; align-items:center; gap:10px;"><button onclick="curChatMedia=null; document.getElementById('chatPreviewBox').style.display='none'" style="position:static; width:20px; height:20px;">✖</button>📎 ${curChatMedia.name}</div>`; }
+        if(curChatMedia.type === 'image') { 
+            box.innerHTML = `<div class="chat-preview-item"><button class="btn-remove-media" onclick="curChatMedia=null; document.getElementById('chatPreviewBox').style.display='none'">✖</button><img src="${curChatMedia.data}"></div>`; 
+        } 
+        else { 
+            box.innerHTML = `<div class="chat-preview-item"><button class="btn-remove-media" onclick="curChatMedia=null; document.getElementById('chatPreviewBox').style.display='none'">✖</button><div class="chat-preview-file">📎 ${curChatMedia.name}</div></div>`; 
+        }
         box.style.display = 'flex';
     }
 
@@ -1106,7 +1119,7 @@
 
         if (needReadSync && lastUnreadMsg) {
             if(fdb) fdb.ref('chats/' + lastUnreadMsg.id).set(lastUnreadMsg);
-            updateRoomListUI(); // 읽음 처리 후 뱃지 업데이트
+            updateRoomListUI(); 
         }
         if (forceScrollBottom || isNearBottom) { area.scrollTop = area.scrollHeight; }
     }
@@ -1133,7 +1146,6 @@
             const dayEvents = events.filter(e => e.date === dateStr);
             let eventHTML = '';
             
-            // ⭐️ [수정사항 2] 달력 셀에 표시되는 일정 텍스트 앞에 작성자(e.user)가 나오도록 변경
             dayEvents.slice(0, 3).forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.user}: ${e.text}</div>`; });
             if(dayEvents.length > 3) { eventHTML += `<div class="cal-event-text" style="text-align:center; color:#888;">+${dayEvents.length - 3} 더보기</div>`; }
             if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
@@ -1148,7 +1160,6 @@
         const dayEvents = events.filter(e => e.date === calSelectedDate);
         if(dayEvents.length === 0) { list.innerHTML = '<div style="text-align:center; color:#888; padding:20px 0;">등록된 일정이 없습니다.</div>'; return; }
         
-        // ⭐️ [수정사항 3] 달력 일정 목록의 [일정] 버튼을 [수정]으로 변경
         dayEvents.forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].btnEdit||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`; });
     }
     async function addNewEvent() {
@@ -1193,7 +1204,6 @@
 </script> 
 
 <script>
-  // ⭐️ 접속하자마자 서비스 워커를 백그라운드에 미리 깔아서 '앱 설치' 팝업 조건 충족 ⭐️
   if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./firebase-messaging-sw.js');
   }
