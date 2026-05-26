@@ -45,6 +45,7 @@
         .login-section { text-align: center; }
         .login-section-title { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;}
         .user-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .user-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
         .user-btn { padding: 10px 24px; font-size: 0.95rem; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; color: var(--text-main); transition: 0.2s; width: 110px;}
         .user-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
         #manualLangContainer { display: none; margin-top: 15px; }
@@ -84,6 +85,11 @@
         .gallery-item { position: relative; width: 80px; height: 80px; border-radius: 6px; border: 1px solid var(--border-color); }
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; cursor: zoom-in; }
         .btn-remove-photo { position: absolute; top: -6px; right: -6px; background: #fff; color: #ef4444; border: 1px solid #ffccd0; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; z-index: 5; font-size: 0.7rem;}
+        
+        /* ⭐️ 추가된 스타일: 수첩 제목 입력란 ⭐️ */
+        .memo-title-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 1rem; font-weight: bold; outline: none; margin-bottom: 10px; box-sizing: border-box; background: #fff; }
+        .memo-title-input:focus { border-color: var(--accent-color); }
+
         textarea.memo-ta { flex: 1; width: 100%; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1rem; line-height: 1.6; background: #fafafa; resize: none; outline: none;}
         .translation-actions { display: flex; gap: 10px; margin-top: 10px; }
         .translation-actions button { flex: 1; padding: 10px; background: #fff; color: var(--accent-color); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer;}
@@ -95,6 +101,11 @@
         .chat-room-actions button { background: #fff; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem;}
         .btn-delete-room { color: #ef4444 !important; border-color: #ffccd0 !important; display: none; } 
         
+        /* ⭐️ 추가된 스타일: 채팅방 전용 검색 바 ⭐️ */
+        .chat-search-container { margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        .chat-search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit; font-size: 0.9rem; outline: none; box-sizing: border-box; background: #fff; }
+        .chat-search-input:focus { border-color: var(--accent-color); }
+
         .chat-body-container { display: flex; flex: 1; position: relative; overflow: hidden; border: 1px solid var(--border-color); border-radius: 8px;}
         .chat-main-section { display: flex; flex-direction: column; flex: 1; background: var(--chat-bg); min-width: 0; }
         .member-sidebar { position: absolute; right: -250px; top: 0; bottom: 0; width: 200px; background: #fff; border-left: 1px solid var(--border-color); transition: right 0.3s ease; z-index: 50; box-shadow: -2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow-y: auto;}
@@ -133,7 +144,6 @@
 
         .chat-input-area { flex: 0 0 auto; background: #fff; padding: 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; box-sizing: border-box; width: 100%;}
         
-        /* ⭐️ 추가/수정됨: 첨부 미디어 미리보기 UI 고정 (모바일 화면 밀림 방지) ⭐️ */
         #chatPreviewBox { display: none; margin-bottom: 10px; align-items: center; justify-content: flex-start; }
         .chat-preview-item { position: relative; display: inline-block; background: #f8fafc; padding: 5px; border-radius: 8px; border: 1px solid var(--border-color); max-width: 100%; box-sizing: border-box;}
         .chat-preview-item img { max-height: 120px; max-width: 100%; border-radius: 4px; object-fit: contain; display: block; }
@@ -195,7 +205,6 @@
         /* 📱 반응형 (모바일) 완벽 설정 */
         @media (max-width: 768px) {
             body { padding: 10px; min-width: 100%; min-height: 100%;}
-            /* ⭐️ 모바일에서 폰트 및 로고 크기 축소 (한 줄 유지) ⭐️ */
             #globalAppTitle { font-size: 1.0rem; margin-bottom: 10px; white-space: nowrap; }
             #globalAppTitle img { height: 20px; margin-right: 5px; }
             
@@ -218,7 +227,6 @@
             .chat-room-actions { display: flex; width: 100%; justify-content: space-between; margin-top: 10px;}
             .chat-room-header { flex-direction: column; align-items: stretch; }
             
-            /* ⭐️ 모바일에서는 썸네일을 80px로 더 작게 고정하여 전송 버튼 확보 */
             .chat-preview-item img { max-height: 80px; } 
         }
     </style>
@@ -335,6 +343,9 @@
             </div>
             <div class="col-header"><button class="btn-mini-photo" id="ui_btnPhoto" onclick="document.getElementById('photoInput').click()">사진 첨부</button><input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event, 'memo')"></div>
             <div class="gallery-container" id="photoGallery"></div>
+            
+            <input type="text" id="memoTitleInput" class="memo-title-input" placeholder="제목을 입력하세요 (미입력 시 날짜가 제목이 됩니다)">
+            
             <textarea id="mainText" class="memo-ta" placeholder="현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)"></textarea>
             <div class="translation-actions" id="translationActions"></div>
         </div>
@@ -352,6 +363,11 @@
                     <button id="ui_btnCreateRoom" onclick="openCreateRoomModal()">방생성(+초대)</button>
                 </div>
             </div>
+            
+            <div class="chat-search-container">
+                <input type="text" id="chatSearchInput" class="chat-search-input" placeholder="채팅 내용 검색..." oninput="renderChatUI(false)">
+            </div>
+
             <div class="chat-body-container">
                 <div class="chat-main-section">
                     <div class="chat-area" id="chatArea"></div>
@@ -400,7 +416,6 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "MsChoi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // ⭐️ 번역 사전에 btnEdit("수정") 버튼 항목 추가 유지
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", btnEdit: "수정", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원 목록", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+초대)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -409,7 +424,8 @@
             alertInput: "내용을 입력하세요.", alertSaved: "저장되었습니다!", confirmDel: "삭제하시겠습니까?", alertBaseRoom: "기본 방은 삭제할 수 없습니다.", confirmRoomDel: "이 방을 완전히 삭제하시겠습니까? 모든 팀원의 목록에서도 삭제됩니다.", alertRoomName: "방 이름을 입력하세요.", alertBigFile: "너무 큰 파일입니다. 5MB 이하를 권장합니다.", alertLimit: "⚠️ 데이터 용량 한계(약 5만자)를 초과하여 저장할 수 없습니다.\n사진을 지우거나 메모를 두 개로 나누어 저장해 주십시오.", alertNetErr: "인터넷 연결이 원활하지 않아 서버 저장에 실패했습니다.", alert2MB: "2MB 이하의 파일만 첨부 가능합니다.", confirmMsgDel: "이 메시지를 삭제하시겠습니까?", alertEvtInput: "일정 내용을 입력하세요.", confirmEvtDel: "이 일정을 삭제하시겠습니까?", promptEvtEdit: "일정을 수정하세요:",
             deletedMsg: "🚫 삭제된 메시지입니다.", alertCopy: "복사 완료!", alertTransErr: "번역 에러", replyingTo: "님에게 답장 중...",
             memoPH: "현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)",
-            btnPush: "🔔 알림 켜기/초기화", pushSuccess: "✅ [성공] 서버에 알림 주소가 완벽히 갱신(초기화) 되었습니다!", pushFailConn: "❌ [연결 실패] ", pushFailToken: "❌ [토큰 실패] ", pushAllow: "알림 권한을 허용해 주셔야 합니다."
+            btnPush: "🔔 알림 켜기/초기화", pushSuccess: "✅ [성공] 서버에 알림 주소가 완벽히 갱신(초기화) 되었습니다!", pushFailConn: "❌ [연결 실패] ", pushFailToken: "❌ [토큰 실패] ", pushAllow: "알림 권한을 허용해 주셔야 합니다.",
+            chatSearchPH: "채팅 내용 검색...", memoTitlePH: "제목을 입력하세요 (미입력 시 날짜가 제목이 됩니다)"
         },
         vi: { 
             list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", btnEdit: "Sửa", navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch", titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Thành viên", btnCloseMem: "Đóng", chatPH: "Enter: Gửi / Shift+Enter: Xuống dòng", btnSend: "Gửi", btnCreateRoom: "Tạo phòng (+Mời)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều",
@@ -418,7 +434,8 @@
             alertInput: "Vui lòng nhập nội dung.", alertSaved: "Đã lưu thành công!", confirmDel: "Bạn có chắc chắn muốn xóa?", alertBaseRoom: "Không thể xóa phòng mặc định.", confirmRoomDel: "Bạn có chắc chắn muốn xóa phòng này hoàn toàn không? Nó cũng sẽ bị xóa khỏi danh sách của tất cả các thành viên.", alertRoomName: "Vui lòng nhập tên phòng.", alertBigFile: "Tập cải quá lớn. Khuyến nghị dưới 5MB.", alertLimit: "⚠️ Đã vượt quá giới hạn dữ liệu (khoảng 50.000 ký tự) nên không thể lưu.\nVui lòng xóa bớt ảnh hoặc chia ghi chú thành hai để lưu.", alertNetErr: "Lỗi kết nối internet nên không thể lưu vào máy chủ.", alert2MB: "Chỉ đính kèm được tập tin dưới 2MB.", confirmMsgDel: "Bạn có chắc chắn muốn xóa tin nhắn này không?", alertEvtInput: "Vui lòng nhập nội dung sự kiện.", confirmEvtDel: "Bạn có chắc chắn muốn xóa sự kiện này không?", promptEvtEdit: "Vui lòng sửa sự kiện:",
             deletedMsg: "🚫 Tin nhắn đã bị xóa.", alertCopy: "Đã sao chép!", alertTransErr: "Lỗi dịch", replyingTo: "Đang trả lời",
             memoPH: "Vui lòng ghi lại chi tiết công việc hiện trường... (Có thể sao chép và dán hình ảnh)",
-            btnPush: "🔔 Bật/Đặt lại TB", pushSuccess: "✅ [Thành công] Đã đăng ký nhận thông báo!", pushFailConn: "❌ [Lỗi kết nối] ", pushFailToken: "❌ [Lỗi Token] ", pushAllow: "Vui lòng cho phép quyền thông báo."
+            btnPush: "🔔 Bật/Đặt lại TB", pushSuccess: "✅ [Thành công] Đã đăng ký nhận thông báo!", pushFailConn: "❌ [Lỗi kết nối] ", pushFailToken: "❌ [Lỗi Token] ", pushAllow: "Vui lòng cho phép quyền thông báo.",
+            chatSearchPH: "Tìm kiếm tin nhắn...", memoTitlePH: "Nhập tiêu đề (nếu trống sẽ dùng ngày làm tiêu đề)"
         },
         en: { 
             list: "List", new: "New", save: "Save", del: "Delete", btnEdit: "Edit", navMemo: "Memo(Trans)", navChat: "Messenger", navCal: "Calendar", titleMemo: "Personal Memo", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMem: "Member List", btnCloseMem: "Close List", chatPH: "Enter: Send / Shift+Enter: Newline", btnSend: "Send", btnCreateRoom: "Create Room", timeAll: "All Day", timeAM: "AM", timePM: "PM",
@@ -427,7 +444,8 @@
             alertInput: "Please enter content.", alertSaved: "Saved successfully!", confirmDel: "Are you sure you want to delete?", alertBaseRoom: "The default room cannot be deleted.", confirmRoomDel: "Are you sure you want to completely delete this room? It will be removed from all members' lists.", alertRoomName: "Please enter a room name.", alertBigFile: "File is too large. Under 5MB recommended.", alertLimit: "⚠️ Data limit exceeded (approx 50,000 chars) cannot be saved.\nPlease delete photos or split the memo in two.", alertNetErr: "Failed to save to server due to poor internet connection.", alert2MB: "Only files under 2MB can be attached.", confirmMsgDel: "Are you sure you want to delete this message?", alertEvtInput: "Please enter event details.", confirmEvtDel: "Are you sure you want to delete this event?", promptEvtEdit: "Edit the event:",
             deletedMsg: "🚫 Deleted message.", alertCopy: "Copied!", alertTransErr: "Translation Error", replyingTo: "Replying to",
             memoPH: "Please record the field work details... (Image copy & paste available)",
-            btnPush: "🔔 Enable/Reset Push", pushSuccess: "✅ [Success] Push notification registered!", pushFailConn: "❌ [Connection Error] ", pushFailToken: "❌ [Token Error] ", pushAllow: "Please allow notification permissions."
+            btnPush: "🔔 Enable/Reset Push", pushSuccess: "✅ [Success] Push notification registered!", pushFailConn: "❌ [Connection Error] ", pushFailToken: "❌ [Token Error] ", pushAllow: "Please allow notification permissions.",
+            chatSearchPH: "Search messages...", memoTitlePH: "Enter title (leaves empty to use date as title)"
         }
     };
 
@@ -444,14 +462,12 @@
     let chatRooms = savedRooms.length > 0 ? savedRooms : [{id: 'room_gen', name: 'KNC Group', creator: 'admin', members: allUsers}];
     let currentRoomId = 'room_gen', chatHistory = [], events = [], memos = []; 
 
-    // ⭐️ [추가된 기능] 채팅방 (🔴 n) 뱃지 실시간 업데이트 함수 ⭐️
     function updateRoomListUI() {
         const sel = document.getElementById('chatRoomSelect');
         if(!sel) return;
         sel.innerHTML = '';
         chatRooms.forEach(r => {
             if (r.id === 'room_gen' || r.members.includes(currentUser)) {
-                // 해당 방에 내가 읽지 않은 남의 메시지가 몇 개인지 계산
                 const unreadCount = chatHistory.filter(m => m.roomId === r.id && m.sender !== currentUser && m.readBy && !m.readBy.includes(currentUser)).length;
                 const unreadMark = unreadCount > 0 ? ` (🔴 ${unreadCount})` : '';
                 sel.innerHTML += `<option value="${r.id}">${r.name}${unreadMark}</option>`;
@@ -461,10 +477,10 @@
         document.getElementById('btnDeleteRoom').style.display = currentRoomId === 'room_gen' ? 'none' : 'inline-block';
     }
 
-    // ⭐️ [수정사항 1] 누군가 방을 만들었을 때 강제로 방에 편입되는 버그(로직) 원천 제거
     function openChatRoom(targetRoomId) {
         if (!chatRooms.find(r => r.id === targetRoomId)) return;
         currentRoomId = targetRoomId;
+        document.getElementById('chatSearchInput').value = ""; // ⭐️ 방 이동 시 기존 검색어 초기화 ⭐️
         setAppMode('chat');
         updateRoomListUI();
     }
@@ -520,7 +536,6 @@
 
             chatHistory = incomingChats.sort((a, b) => a.id - b.id);
             
-            // ⭐️ [추가된 기능] 앱을 켰을 때(또는 알림 누르고 들어올 때) 가장 최근 안 읽은 방으로 자동 순간이동 ⭐️
             if (isInitialChatSync) {
                 let unreadRoomId = null;
                 for (let i = chatHistory.length - 1; i >= 0; i--) {
@@ -537,7 +552,6 @@
                 }
             }
 
-            // 채팅 내역이 로드될 때 드롭다운의 뱃지도 실시간으로 업데이트
             updateRoomListUI();
 
             isInitialChatSync = false; 
@@ -747,6 +761,10 @@
         const sb = document.getElementById('memberSidebar');
         if(appMode === 'chat') document.getElementById('btnToggleMemberList').innerText = sb.classList.contains('open') ? d.btnCloseMem : d.btnMem;
         
+        // ⭐️ 다국어화 홀더 갱신 적용 ⭐️
+        document.getElementById('chatSearchInput').placeholder = d.chatSearchPH;
+        document.getElementById('memoTitleInput').placeholder = d.memoTitlePH;
+
         if(appMode === 'calendar') renderCalendar();
         if(appMode === 'chat') renderChatUI(false);
         renderTranslationButtons();
@@ -804,14 +822,25 @@
     }
     function renderGallery() { const g = document.getElementById('photoGallery'); g.innerHTML = ''; currentMemoImages.forEach((s, i) => { g.innerHTML += `<div class="gallery-item"><button class="btn-remove-photo" onclick="currentMemoImages.splice(${i},1);renderGallery()">✖</button><img src="${s}" onclick="openLightbox(this.src)"></div>`; }); }
     
-    function startNewMemo() { curMemId = null; currentMemoImages = []; document.getElementById('mainText').value = ""; renderGallery(); document.getElementById('ui_dateGroup').innerText = UI_DICT[selectedLang].newDisplay; }
+    // ⭐️ 수정됨: 새 기록 시 제목 필드도 함께 리셋 ⭐️
+    function startNewMemo() { 
+        curMemId = null; 
+        currentMemoImages = []; 
+        document.getElementById('mainText').value = ""; 
+        document.getElementById('memoTitleInput').value = ""; 
+        renderGallery(); 
+        document.getElementById('ui_dateGroup').innerText = UI_DICT[selectedLang].newDisplay; 
+    }
     
+    // ⭐️ 수정됨: 제목 필드 데이터 객체화하여 서버에 함께 전송 ⭐️
     async function saveMemo() {
         if(!currentUser) return;
-        const val = document.getElementById('mainText').value; if(!val && currentMemoImages.length===0) return alert(UI_DICT[selectedLang].alertInput);
+        const val = document.getElementById('mainText').value; 
+        const titleVal = document.getElementById('memoTitleInput').value.trim();
+        if(!val && currentMemoImages.length===0) return alert(UI_DICT[selectedLang].alertInput);
         if(!curMemId) curMemId = Date.now().toString();
         const d = new Date(parseInt(curMemId)); const dS = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; const tS = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        const memoData = {id:curMemId, date:dS, time:tS, text:val, images:currentMemoImages, user:currentUser};
+        const memoData = {id:curMemId, date:dS, time:tS, title:titleVal, text:val, images:currentMemoImages, user:currentUser};
         
         const payloadString = JSON.stringify(memoData);
         if (payloadString.length > 48000) { return alert(UI_DICT[selectedLang].alertLimit); }
@@ -827,7 +856,18 @@
         } catch(e) { alert(UI_DICT[selectedLang].alertNetErr); }
     }
     
-    function loadDataById(id) { const d = memos.find(m => m.id === id); if(d) { curMemId = d.id; document.getElementById('mainText').value = d.text || ""; currentMemoImages = d.images || []; renderGallery(); document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; } }
+    // ⭐️ 수정됨: 사이드바 메모 로드 시 저장된 제목도 필드에 매칭 ⭐️
+    function loadDataById(id) { 
+        const d = memos.find(m => m.id === id); 
+        if(d) { 
+            curMemId = d.id; 
+            document.getElementById('mainText').value = d.text || ""; 
+            document.getElementById('memoTitleInput').value = d.title || ""; 
+            currentMemoImages = d.images || []; 
+            renderGallery(); 
+            document.getElementById('ui_dateGroup').innerText = `${d.date} ${d.time||''}`; 
+        } 
+    }
     
     function deleteMemo() { 
         if(curMemId && confirm(UI_DICT[selectedLang].confirmDel)) { 
@@ -837,14 +877,22 @@
         } 
     }
     
+    // ⭐️ 수정됨: 목록 로드 시 제목이 있으면 제목 표시, 없으면 날짜를 표시하도록 자동 우회 ⭐️
     function refreshList() {
         if(!currentUser) return;
         const l = document.getElementById('memoList'); l.innerHTML = ""; const k = document.getElementById('searchInput').value.toLowerCase(); 
         let myMemos = memos.filter(m => m.user === currentUser);
         myMemos.forEach(d => {
-            if(k && !(d.text||'').toLowerCase().includes(k)) return;
+            const textMatch = (d.text||'').toLowerCase().includes(k);
+            const titleMatch = (d.title||'').toLowerCase().includes(k);
+            if(k && !textMatch && !titleMatch) return;
+            
             const li = document.createElement('li'); li.className='memo-item'; li.onclick=()=> {loadDataById(d.id); toggleSidebar();};
-            li.innerHTML = `<span class="date-label">${d.date}${d.images&&d.images.length?" 📷":""}</span><span style="color:var(--text-sub);">${(d.text||'').substring(0,15)}...</span>`;
+            
+            // 제목 유무 분기 로직 적용
+            const displayTitle = d.title ? d.title : d.date;
+            
+            li.innerHTML = `<span class="date-label">${displayTitle}${d.images&&d.images.length?"  📷":""}</span><span style="color:var(--text-sub);">${(d.text||'').substring(0,15)}...</span>`;
             l.appendChild(li);
         });
     }
@@ -888,9 +936,9 @@
         updateRoomListUI();
     }
 
-    // ⭐️ [수정사항 1] 누군가 방을 만들었을 때 강제로 방에 편입되는 버그(로직) 원천 제거
     function changeChatRoom() { 
         currentRoomId = document.getElementById('chatRoomSelect').value; 
+        document.getElementById('chatSearchInput').value = ""; // ⭐️ 방 변경 시 대화 검색어 초기화 ⭐️
         renderOnlineStatus(); renderChatUI(true); 
         updateRoomListUI();
     }
@@ -925,7 +973,6 @@
         }; r.readAsDataURL(f); e.target.value = '';
     }
 
-    // ⭐️ [수정사항] 사진 미리보기 시 삭제 버튼 클래스 연결 및 레이아웃 수정
     function showChatMediaPreview() {
         const box = document.getElementById('chatPreviewBox');
         if(curChatMedia.type === 'image') { 
@@ -1053,6 +1100,7 @@
         }
     }
 
+    // ⭐️ 수정됨: 대화 내용 필터링 실시간 반영 검색 로직 결합 ⭐️
     function renderChatUI(forceScrollBottom = false) {
         if(appMode !== 'chat') return;
         const area = document.getElementById('chatArea'); 
@@ -1060,7 +1108,6 @@
         area.innerHTML = ""; 
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
         
-        // ⭐️ [1차 방어선] 내가 속하지 않은 방이면 메시지를 절대 화면에 그리지 않고 차단!
         if(!curRoom || (currentRoomId !== 'room_gen' && !curRoom.members.includes(currentUser))) {
             area.innerHTML = "<div style='text-align:center; padding:30px; color:#888;'>접근 권한이 없는 방입니다.</div>";
             return;
@@ -1069,7 +1116,22 @@
         let needReadSync = false; let lastUnreadMsg = null;
         let lastDateStr = ""; 
 
+        // 입력받은 검색어 체크
+        const searchKeyword = document.getElementById('chatSearchInput').value.trim().toLowerCase();
+
         chatHistory.filter(m => m.roomId === currentRoomId).forEach(m => {
+            // ⭐️ 검색어가 있을 때 메시지 원문 및 번역본, 발송인을 통합 검색 필터링 ⭐️
+            if (searchKeyword) {
+                const matchOriginal = (m.original || "").toLowerCase().includes(searchKeyword);
+                const matchKo = (m.ko || "").toLowerCase().includes(searchKeyword);
+                const matchVi = (m.vi || "").toLowerCase().includes(searchKeyword);
+                const matchEn = (m.en || "").toLowerCase().includes(searchKeyword);
+                const matchSender = (m.sender || "").toLowerCase().includes(searchKeyword);
+                if (!matchOriginal && !matchKo && !matchVi && !matchEn && !matchSender) {
+                    return; 
+                }
+            }
+
             if(!m.readBy) m.readBy = [m.sender]; 
             if(!m.readBy.includes(currentUser)) { m.readBy.push(currentUser); needReadSync = true; lastUnreadMsg = m; }
             
@@ -1154,7 +1216,6 @@
             const dayEvents = events.filter(e => e.date === dateStr);
             let eventHTML = '';
             
-            // ⭐️ [수정사항 2] 달력 셀에 표시되는 일정 텍스트 앞에 작성자(e.user)가 나오도록 변경
             dayEvents.slice(0, 3).forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.user}: ${e.text}</div>`; });
             if(dayEvents.length > 3) { eventHTML += `<div class="cal-event-text" style="text-align:center; color:#888;">+${dayEvents.length - 3} 더보기</div>`; }
             if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
@@ -1203,7 +1264,6 @@
             for (let i = chatHistory.length - 1; i >= 0; i--) {
                 const m = chatHistory[i];
                 if (m.readBy && !m.readBy.includes(currentUser)) { 
-                    // ⭐️ [2차 방어선] 안 읽은 메시지가 있더라도, '내가 속한 방'인지 먼저 검증!
                     const room = chatRooms.find(r => r.id === m.roomId);
                     if (m.roomId === 'room_gen' || (room && room.members.includes(currentUser))) {
                         unreadRoomId = m.roomId; 
@@ -1211,7 +1271,6 @@
                     }
                 }
             }
-            // 검증이 끝난 진짜 내 방으로만 이동
             if (unreadRoomId && currentRoomId !== unreadRoomId) {
                 openChatRoom(unreadRoomId);
             }
