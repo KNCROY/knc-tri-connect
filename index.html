@@ -149,8 +149,8 @@
 
         .chat-controls { display: flex; gap: 8px; align-items: flex-end; width: 100%; box-sizing: border-box;}
         .btn-square { background: var(--bg-color); border: 1px solid var(--border-color); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; flex-shrink: 0;}
-        textarea.chat-ta { flex: 1 1 auto; height: 40px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: none; outline: none; box-sizing: border-box; min-width: 0;}
-        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 40px; padding: 0 20px; border-radius: 8px; cursor: pointer; flex-shrink: 0; white-space: nowrap;}
+        textarea.chat-ta { flex: 1 1 auto; height: 54px; min-height: 54px; max-height: 150px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 0.95rem; resize: vertical; outline: none; box-sizing: border-box; min-width: 0;}
+        .btn-send { background: var(--accent-color); color: #fff; border: none; height: 40px; padding: 0 20px; border-radius: 8px; cursor: pointer; flex-shrink: 0; white-space: nowrap; margin-bottom: 7px;}
 
         /* 📅 달력 UI */
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;}
@@ -211,13 +211,12 @@
             .right-controls { flex-direction: row; justify-content: space-between; gap: 5px; }
             .right-controls button { flex: 1; padding: 8px 2px; font-size: 0.85rem; white-space: nowrap; }
             .chat-controls { gap: 5px; }
-            .btn-square { width: 36px; height: 36px; font-size: 1rem; }
-            textarea.chat-ta { height: 36px; padding: 8px 10px; font-size: 0.9rem; }
-            .btn-send { height: 36px; padding: 0 14px; font-size: 0.85rem; }
+            .btn-square { width: 36px; height: 36px; font-size: 1rem; margin-bottom: 6px; }
+            textarea.chat-ta { height: 48px; min-height: 48px; max-height: 120px; padding: 8px 10px; font-size: 0.9rem; resize: vertical; }
+            .btn-send { height: 36px; padding: 0 14px; font-size: 0.85rem; margin-bottom: 6px; }
             .member-sidebar { width: 220px; right: -250px; z-index: 50; }
             .member-sidebar.open { right: 0; }
             
-            /* ⭐️ 1. 모바일에서 메뉴 버튼들이 한 줄에 완벽히 들어오도록 조정 ⭐️ */
             .chat-room-actions { display: flex; width: 100%; justify-content: space-between; margin-top: 10px; gap: 4px;}
             .chat-room-actions button { flex: 1; padding: 8px 0; font-size: 0.8rem; white-space: nowrap; letter-spacing: -0.5px;}
             
@@ -233,8 +232,20 @@
         <div id="msgActionPreview" style="font-size: 0.85rem; color: #777; margin-bottom: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button id="ui_replyBtn" class="btn-save" style="padding:12px; font-weight:bold; border-radius:8px;" onclick="proceedReply()">이 메시지에 답장</button>
+            <button id="ui_btnMsgForward" style="padding:12px; border:1px solid var(--border-color); background:#fff; font-weight:bold; border-radius:8px; cursor:pointer;" onclick="openForwardModal()">메시지 전달</button>
             <button id="btnMsgDelete" style="padding:12px; color:#ef4444; border:1px solid #ffccd0; background:#fff; font-weight:bold; border-radius:8px;" onclick="deleteMsg()">메시지 삭제</button>
             <button id="ui_msgCloseBtn" style="padding:12px; background:#f5f5f7; border:none; border-radius:8px; cursor:pointer;" onclick="document.getElementById('msgActionModalOverlay').style.display='none'">닫기</button>
+        </div>
+    </div>
+</div>
+
+<div id="forwardModalOverlay" class="trans-modal-overlay">
+    <div class="trans-modal" style="max-width: 300px; text-align: center;">
+        <h3 id="ui_forwardTitle" style="font-size: 1.1rem; color: var(--accent-color); margin-bottom: 15px; margin-top: 0;">방 선택하여 전달</h3>
+        <select id="forwardRoomSelect" style="margin-bottom:15px; width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-color); outline:none;"></select>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <button id="ui_btnSubmitForward" class="btn-save" style="padding:12px; font-weight:bold; border-radius:8px;" onclick="submitForward()">전달</button>
+            <button style="padding:12px; background:#f5f5f7; border:none; border-radius:8px; cursor:pointer;" onclick="document.getElementById('forwardModalOverlay').style.display='none'">취소</button>
         </div>
     </div>
 </div>
@@ -261,7 +272,7 @@
     </div>
 </div>
 
-<div id="editCalModalOverlay" class="trans-modal-overlay">
+<div id="editCalModalOverlay" class="trans-modal-overlay" style="z-index: 250;">
     <div class="trans-modal" style="max-width: 350px;">
         <h3 id="ui_editCalTitle">일정 수정</h3>
         <select id="editCalTime" style="margin-bottom:15px; width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-color);">
@@ -286,8 +297,8 @@
     </div>
 </div>
 
-<div id="transModalOverlay" class="trans-modal-overlay">
-    <div class="trans-modal"><h3 id="transModalTitle">Translation Result</h3><textarea id="transResultText" readonly></textarea><div class="trans-modal-btns"><button class="btn-save" onclick="copyTranslation()">복사</button><button onclick="closeTransModal()">닫기</button></div></div>
+<div id="transModalOverlay" class="trans-modal-overlay" style="z-index: 250;">
+    <div class="trans-modal"><h3 id="transModalTitle">Translation Result</h3><textarea id="transResultText" readonly></textarea><div class="trans-modal-btns"><button class="btn-save" id="ui_btnTransCopy" onclick="copyTranslation()">복사</button><button onclick="closeTransModal()">닫기</button></div></div>
 </div>
 
 <div id="createRoomModalOverlay" class="trans-modal-overlay">
@@ -300,7 +311,7 @@
 </div>
 
 <div id="calModalOverlay" class="trans-modal-overlay">
-    <div class="trans-modal" style="max-width: 450px; height: 60vh;">
+    <div class="trans-modal" style="max-width: 480px; height: 60vh;">
         <h3 id="ui_calModalDateTitle">일정 관리</h3><div id="calModalEventList"></div>
         <div style="display:flex; gap:8px; margin-top:auto;">
             <select id="newCalTimeSelect" style="margin-bottom:0; flex:0 0 80px;"><option value="all" id="optTimeAll">종일</option><option value="am" id="optTimeAM">오전</option><option value="pm" id="optTimePM">오후</option></select>
@@ -433,7 +444,6 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "MsChoi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // ⭐️ 1, 2, 4. UI 텍스트 업데이트 (방수정, 팀원, 팀원추가, 번역재시도 관련) ⭐️
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", btnEdit: "수정", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -444,7 +454,8 @@
             memoPH: "현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)",
             btnPush: "🔔 알림 켜기/초기화", pushSuccess: "✅ [성공] 서버에 알림 주소가 완벽히 갱신(초기화) 되었습니다!", pushFailConn: "❌ [연결 실패] ", pushFailToken: "❌ [토큰 실패] ", pushAllow: "알림 권한을 허용해 주셔야 합니다.",
             chatSearchPH: "채팅 내용 검색...", memoTitlePH: "제목을 입력하세요 (미입력 시 날짜가 제목이 됩니다)", btnSearchChat: "검색",
-            btnEditRoom: "방수정", btnAddMember: "팀원 추가", editRoomTitle: "방 수정", retryTrans: "재시도", transFail: "⚠️ 번역 실패 (재시도 🔄)"
+            btnEditRoom: "방수정", btnAddMember: "팀원 추가", editRoomTitle: "방 수정", retryTrans: "재시도", transFail: "⚠️ 번역 실패 (재시도 🔄)",
+            forwardMsg: "메시지 전달", forwardTitle: "방 선택하여 전달", btnForward: "전달", btnTrans: "번역"
         },
         vi: { 
             list: "Danh sách", new: "Tạo mới", save: "Lưu", del: "Xóa", btnEdit: "Sửa", navMemo: "Sổ tay(Dịch)", navChat: "Tin nhắn", navCal: "Lịch", titleMemo: "Sổ tay cá nhân", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Thêm ảnh", btnCopy: "Sao chép", btnClose: "Đóng", newDisplay: "Đang viết mới...", btnMem: "Nhóm", btnCloseMem: "Đóng", chatPH: "Enter: Gửi / Shift+Enter: Xuống dòng", btnSend: "Gửi", btnCreateRoom: "Tạo(+)", timeAll: "Cả ngày", timeAM: "Sáng", timePM: "Chiều",
@@ -455,7 +466,8 @@
             memoPH: "Vui lòng ghi lại chi tiết công việc hiện trường... (Có thể sao chép và dán hình ảnh)",
             btnPush: "🔔 Bật/Đặt lại TB", pushSuccess: "✅ [Thành công] Đã đăng ký nhận thông báo!", pushFailConn: "❌ [Lỗi kết nối] ", pushFailToken: "❌ [Lỗi Token] ", pushAllow: "Vui lòng cho phép quyền thông báo.",
             chatSearchPH: "Tìm kiếm tin nhắn...", memoTitlePH: "Nhập tiêu đề (nếu trống sẽ dùng ngày làm tiêu đề)", btnSearchChat: "Tìm",
-            btnEditRoom: "Sửa phòng", btnAddMember: "Thêm T.Viên", editRoomTitle: "Sửa phòng", retryTrans: "Thử lại", transFail: "⚠️ Lỗi dịch (Thử lại 🔄)"
+            btnEditRoom: "Sửa phòng", btnAddMember: "Thêm T.Viên", editRoomTitle: "Sửa phòng", retryTrans: "Thử lại", transFail: "⚠️ Lỗi dịch (Thử lại 🔄)",
+            forwardMsg: "Chuyển tiếp", forwardTitle: "Chọn phòng để chuyển", btnForward: "Chuyển", btnTrans: "Dịch"
         },
         en: { 
             list: "List", new: "New", save: "Save", del: "Delete", btnEdit: "Edit", navMemo: "Memo(Trans)", navChat: "Messenger", navCal: "Calendar", titleMemo: "Personal Memo", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "Add Photo", btnCopy: "Copy", btnClose: "Close", newDisplay: "New memo...", btnMem: "Team", btnCloseMem: "Close List", chatPH: "Enter: Send / Shift+Enter: Newline", btnSend: "Send", btnCreateRoom: "New(+)", timeAll: "All Day", timeAM: "AM", timePM: "PM",
@@ -466,7 +478,8 @@
             memoPH: "Please record the field work details... (Image copy & paste available)",
             btnPush: "🔔 Enable/Reset Push", pushSuccess: "✅ [Success] Push notification registered!", pushFailConn: "❌ [Connection Error] ", pushFailToken: "❌ [Token Error] ", pushAllow: "Please allow notification permissions.",
             chatSearchPH: "Search messages...", memoTitlePH: "Enter title (leaves empty to use date as title)", btnSearchChat: "Search",
-            btnEditRoom: "Edit", btnAddMember: "Add Member", editRoomTitle: "Edit Room", retryTrans: "Retry", transFail: "⚠️ Trans Fail (Retry 🔄)"
+            btnEditRoom: "Edit", btnAddMember: "Add Member", editRoomTitle: "Edit Room", retryTrans: "Retry", transFail: "⚠️ Trans Fail (Retry 🔄)",
+            forwardMsg: "Forward Message", forwardTitle: "Select room to forward", btnForward: "Forward", btnTrans: "Trans"
         }
     };
 
@@ -496,7 +509,6 @@
         });
         sel.value = currentRoomId; 
         
-        // 방수정 버튼 표출 처리
         document.getElementById('btnEditRoom').style.display = currentRoomId === 'room_gen' ? 'none' : 'inline-block';
     }
 
@@ -779,6 +791,7 @@
         document.getElementById('optEditTimePM').innerText = d.timePM;
         
         document.getElementById('ui_replyBtn').innerText = d.replyToMsg;
+        document.getElementById('ui_btnMsgForward').innerText = d.forwardMsg;
         document.getElementById('btnMsgDelete').innerText = d.delMsg;
         document.getElementById('ui_msgCloseBtn').innerText = d.btnClose;
         document.getElementById('ui_editCalTitle').innerText = d.editEvent;
@@ -803,7 +816,6 @@
         document.getElementById('memoTitleInput').placeholder = d.memoTitlePH;
         document.getElementById('ui_btnChatSearchToggle').innerText = d.btnSearchChat;
 
-        // ⭐️ 방 수정 모달 및 새 버튼들의 번역 적용 ⭐️
         document.getElementById('btnEditRoom').innerText = d.btnEditRoom;
         document.getElementById('ui_editRoomTitle').innerText = d.editRoomTitle;
         document.getElementById('ui_btnAddMember').innerText = d.btnAddMember;
@@ -811,6 +823,10 @@
         document.getElementById('ui_addMemberTitle').innerText = d.btnAddMember;
         document.getElementById('ui_btnSubmitAddMember').innerText = d.addBtn;
         document.getElementById('ui_editRoomClose').innerText = d.btnClose;
+        document.getElementById('ui_btnTransCopy').innerText = d.btnCopy;
+
+        if(document.getElementById('ui_forwardTitle')) document.getElementById('ui_forwardTitle').innerText = d.forwardTitle;
+        if(document.getElementById('ui_btnSubmitForward')) document.getElementById('ui_btnSubmitForward').innerText = d.btnForward;
 
         if(appMode === 'calendar') renderCalendar();
         if(appMode === 'chat') renderChatUI(false);
@@ -987,7 +1003,6 @@
         updateRoomListUI();
     }
 
-    // ⭐️ 방 수정 기능 (모달 호출 및 삭제 로직) ⭐️
     function openEditRoomModal() {
         document.getElementById('editRoomModalOverlay').style.display = 'flex';
     }
@@ -1005,7 +1020,6 @@
         }
     }
 
-    // ⭐️ 팀원 추가 기능 ⭐️
     function openAddMemberModal() {
         document.getElementById('editRoomModalOverlay').style.display = 'none';
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
@@ -1111,6 +1125,54 @@
         document.getElementById('msgActionModalOverlay').style.display = 'flex';
     }
 
+    function openForwardModal() {
+        document.getElementById('msgActionModalOverlay').style.display = 'none';
+        const sel = document.getElementById('forwardRoomSelect');
+        sel.innerHTML = '';
+        chatRooms.forEach(r => {
+            if (r.id === 'room_gen' || r.members.includes(currentUser)) {
+                sel.innerHTML += `<option value="${r.id}">${r.name}</option>`;
+            }
+        });
+        sel.value = currentRoomId; 
+        document.getElementById('forwardModalOverlay').style.display = 'flex';
+    }
+
+    async function submitForward() {
+        const targetRoomId = document.getElementById('forwardRoomSelect').value;
+        if(!targetRoomId) return;
+        document.getElementById('forwardModalOverlay').style.display = 'none';
+        
+        const originalMsg = chatHistory.find(m => m.id === actionMsgTarget.id);
+        if (!originalMsg) return;
+
+        const txt = originalMsg.original;
+        const mid = Date.now().toString();
+        
+        const nm = { 
+            id: mid, 
+            roomId: targetRoomId, 
+            sender: currentUser, 
+            lang: selectedLang, 
+            original: txt, 
+            media: originalMsg.media || null, 
+            replyTo: null, 
+            ko: originalMsg.ko || (selectedLang==='ko'?txt:""), 
+            vi: originalMsg.vi || (selectedLang==='vi'?txt:""), 
+            en: originalMsg.en || (selectedLang==='en'?txt:""), 
+            status: originalMsg.status === 'done' ? 'done' : 'loading', 
+            readBy: [currentUser] 
+        };
+        
+        chatHistory.push(nm); 
+        renderChatUI(true); 
+        if(fdb) fdb.ref('chats/' + mid).set(nm);
+
+        if (currentRoomId !== targetRoomId) {
+            openChatRoom(targetRoomId);
+        }
+    }
+
     function proceedReply() {
         document.getElementById('msgActionModalOverlay').style.display = 'none';
         replyTarget = { id: actionMsgTarget.id, sender: actionMsgTarget.sender, text: actionMsgTarget.text.substring(0,30) + (actionMsgTarget.text.length>30?"...":"") }; 
@@ -1152,13 +1214,11 @@
 
     let isSendingMessage = false;
 
-    // ⭐️ 번역 재시도 기능 구현 (버튼 클릭 시 작동) ⭐️
     async function retryTranslation(mid, event) {
-        if(event) event.stopPropagation(); // 클릭 시 메시지 팝업(답장/삭제)이 뜨지 않도록 방지
+        if(event) event.stopPropagation(); 
         const m = chatHistory.find(x => x.id === mid);
         if (!m) return;
         
-        // 상태를 다시 로딩으로 바꾸고 UI 즉시 업데이트
         m.status = 'loading';
         renderChatUI(false);
         if (fdb) fdb.ref('chats/' + mid).set(m);
@@ -1283,6 +1343,7 @@
                 lastDateStr = dStr;
             }
 
+            const dateMetaStr = String(mon).padStart(2,'0') + "-" + String(d).padStart(2,'0');
             const tStr = String(mDate.getHours()).padStart(2,'0') + ":" + String(mDate.getMinutes()).padStart(2,'0');
 
             const isMe = (m.sender === currentUser); const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'other'}`;
@@ -1296,7 +1357,6 @@
                 displayTxt = displayTxt.replace(/@([A-Za-z가-힣0-9.]+)/g, '<span class="mention">@$1</span>');
                 mainH = `<div class="msg-main">${displayTxt}</div>`;
                 
-                // ⭐️ 4. 번역 로딩 중 클릭 재시도 및 실패 버튼 출력 로직 ⭐️
                 if (m.status === 'loading') transH = `<div class="msg-sub-box"><span onclick="retryTranslation('${m.id}', event)" style="color:var(--accent-color); font-weight:bold; font-size:0.75rem; cursor:pointer;">Translating...⏳ <u style="color:#888;">${UI_DICT[selectedLang].retryTrans}</u></span></div>`;
                 else if (m.status === 'done') transH = `<div class="msg-sub-box"><div class="msg-sub"><span class="lang-badge">${LANG_NAMES[subs[0]]}</span> ${m[subs[0]]}</div><div class="msg-sub"><span class="lang-badge">${LANG_NAMES[subs[1]]}</span> ${m[subs[1]]}</div></div>`;
                 else if (m.status === 'error') transH = `<div class="msg-sub-box"><button onclick="retryTranslation('${m.id}', event)" style="background:none; border:1px solid #ffccd0; color:#ef4444; border-radius:4px; padding:4px 8px; font-size:0.75rem; cursor:pointer; font-weight:bold;">${UI_DICT[selectedLang].transFail}</button></div>`;
@@ -1312,7 +1372,7 @@
             if(m.replyTo) { replyH = `<div class="quote-block"><div class="quote-sender">${m.replyTo.sender}</div><div>${m.replyTo.text}</div></div>`; }
 
             const unreadCnt = curRoom.members.length - m.readBy.length;
-            const metaHTML = `<div class="msg-meta">${unreadCnt > 0 ? `<span class="unread-cnt">${unreadCnt}</span>` : ''}<span class="msg-time">${tStr}</span></div>`;
+            const metaHTML = `<div class="msg-meta">${unreadCnt > 0 ? `<span class="unread-cnt">${unreadCnt}</span>` : ''}<span class="msg-time" style="font-weight:600;">${dateMetaStr}</span><span class="msg-time">${tStr}</span></div>`;
             
             const bubbleHTML = `<div class="msg-content-wrapper">${!isMe ? `<div class="sender-name">${m.sender}</div>` : ''}<div class="bubble" onclick="openMsgAction('${m.id}')">${replyH}${mediaH}${mainH}${transH}</div></div>`;
             
@@ -1363,8 +1423,29 @@
         const dayEvents = events.filter(e => e.date === calSelectedDate);
         if(dayEvents.length === 0) { list.innerHTML = '<div style="text-align:center; color:#888; padding:20px 0;">등록된 일정이 없습니다.</div>'; return; }
         
-        dayEvents.forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].btnEdit||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`; });
+        dayEvents.forEach(e => { 
+            const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); 
+            const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; 
+            list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="translateEvent('${e.id}')" style="color:#0284c7; border-color:#bae6fd;">${UI_DICT[selectedLang].btnTrans||"번역"}</button><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].btnEdit||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`; 
+        });
     }
+
+    async function translateEvent(id) {
+        const evt = events.find(e => e.id === id); 
+        if(!evt) return;
+        document.getElementById('transModalTitle').innerText = "Translation...";
+        document.getElementById('transResultText').value = "Translating...";
+        document.getElementById('transModalOverlay').style.display = 'flex';
+        try { 
+            const res = await fetch(`${GAS_URL}?text=${encodeURIComponent(evt.text)}&target=${selectedLang}`); 
+            const data = await res.json(); 
+            document.getElementById('transModalTitle').innerText = `${selectedLang.toUpperCase()} Result`; 
+            document.getElementById('transResultText').value = data.translatedText; 
+        } catch (err) { 
+            document.getElementById('transResultText').value = UI_DICT[selectedLang].alertTransErr; 
+        }
+    }
+
     async function addNewEvent() {
         const text = document.getElementById('newCalEventInput').value.trim(); if(!text) return alert(UI_DICT[selectedLang].alertEvtInput);
         const tType = document.getElementById('newCalTimeSelect').value;
