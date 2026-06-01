@@ -162,8 +162,13 @@
         .cal-date-num { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 2px;}
         .cal-today { background: #fff; border: 2px solid var(--accent-color); }
         .cal-today .cal-date-num { color: var(--accent-color); font-weight: 800;}
-        .cal-event-dot { background: #ef4444; width: 6px; height: 6px; border-radius: 50%; position: absolute; top: 6px; right: 6px; }
+        .cal-event-dot { background: #ef4444; width: 6px; height: 6px; border-radius: 50%; position: absolute; top: 6px; }
         .cal-event-text { font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; padding: 2px 4px; background: rgba(0,0,0,0.04); border-radius: 4px; color: #333;}
+        
+        /* 🎨 색상 선택기 커스텀 CSS */
+        .color-picker { -webkit-appearance: none; border: none; width: 38px; height: 38px; border-radius: 6px; padding: 0; cursor: pointer; flex-shrink: 0; }
+        .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-picker::-webkit-color-swatch { border: none; border-radius: 6px; }
 
         /* 사이드바 & 모달 UI */
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2); z-index: 150; }
@@ -275,9 +280,12 @@
 <div id="editCalModalOverlay" class="trans-modal-overlay" style="z-index: 250;">
     <div class="trans-modal" style="max-width: 350px;">
         <h3 id="ui_editCalTitle">일정 수정</h3>
-        <select id="editCalTime" style="margin-bottom:15px; width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-color);">
-            <option value="all" id="optEditTimeAll">종일</option><option value="am" id="optEditTimeAM">오전</option><option value="pm" id="optEditTimePM">오후</option>
-        </select>
+        <div style="display:flex; gap:8px; margin-bottom:15px; width:100%;">
+            <select id="editCalTime" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-color); outline:none;">
+                <option value="all" id="optEditTimeAll">종일</option><option value="am" id="optEditTimeAM">오전</option><option value="pm" id="optEditTimePM">오후</option>
+            </select>
+            <input type="color" id="editCalColor" class="color-picker" value="#0284c7" title="일정 색상">
+        </div>
         <input type="text" id="editCalText" placeholder="일정 내용" style="margin-bottom:20px;">
         <div class="trans-modal-btns">
             <button id="ui_editCalSave" class="btn-save" onclick="submitEditEvent()">저장</button>
@@ -314,7 +322,8 @@
     <div class="trans-modal" style="max-width: 480px; height: 60vh;">
         <h3 id="ui_calModalDateTitle">일정 관리</h3><div id="calModalEventList"></div>
         <div style="display:flex; gap:8px; margin-top:auto;">
-            <select id="newCalTimeSelect" style="margin-bottom:0; flex:0 0 80px;"><option value="all" id="optTimeAll">종일</option><option value="am" id="optTimeAM">오전</option><option value="pm" id="optTimePM">오후</option></select>
+            <select id="newCalTimeSelect" style="margin-bottom:0; flex:0 0 70px;"><option value="all" id="optTimeAll">종일</option><option value="am" id="optTimeAM">오전</option><option value="pm" id="optTimePM">오후</option></select>
+            <input type="color" id="newCalColor" class="color-picker" value="#0284c7" title="일정 색상" style="height:38px; width:38px;">
             <input type="text" id="newCalEventInput" placeholder="새로운 일정 입력..." style="margin-bottom:0; flex:1;">
             <button id="ui_btnCalAdd" class="btn-save" style="flex:0 0 auto; border-radius:8px; border:none; padding:0 15px; cursor:pointer;" onclick="addNewEvent()">추가</button>
         </div>
@@ -1409,14 +1418,18 @@
             const dayEvents = events.filter(e => e.date === dateStr);
             let eventHTML = '';
             
-            dayEvents.slice(0, 3).forEach(e => { const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; eventHTML += `<div class="cal-event-text"><strong>[${tLabel}]</strong> ${e.user}: ${e.text}</div>`; });
+            dayEvents.slice(0, 3).forEach((e, idx) => { 
+                const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); 
+                const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; 
+                eventHTML += `<div class="cal-event-text" style="border-left:3px solid ${e.color || '#ef4444'}; padding-left:4px;"><strong>[${tLabel}]</strong> ${e.user}: ${e.text}</div>`; 
+                eventHTML += `<div class="cal-event-dot" style="background:${e.color || '#ef4444'}; right:${6 + idx*10}px;"></div>`;
+            });
             if(dayEvents.length > 3) { eventHTML += `<div class="cal-event-text" style="text-align:center; color:#888;">+${dayEvents.length - 3} 더보기</div>`; }
-            if(dayEvents.length > 0) eventHTML += `<div class="cal-event-dot"></div>`;
             grid.innerHTML += `<div class="cal-cell ${isToday}" onclick="openCalModal('${dateStr}')"><div class="cal-date-num">${day}</div>${eventHTML}</div>`;
         }
     }
     function changeMonth(offset) { currentDate.setMonth(currentDate.getMonth() + offset); renderCalendar(); }
-    function openCalModal(dateStr) { calSelectedDate = dateStr; document.getElementById('ui_calModalDateTitle').innerText = `${dateStr} - ${UI_DICT[selectedLang].manageEvent}`; document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); document.getElementById('calModalOverlay').style.display = 'flex'; }
+    function openCalModal(dateStr) { calSelectedDate = dateStr; document.getElementById('ui_calModalDateTitle').innerText = `${dateStr} - ${UI_DICT[selectedLang].manageEvent}`; document.getElementById('newCalEventInput').value = ''; document.getElementById('newCalColor').value = '#0284c7'; renderCalModalEvents(); document.getElementById('calModalOverlay').style.display = 'flex'; }
     function closeCalModal() { document.getElementById('calModalOverlay').style.display = 'none'; }
     function renderCalModalEvents() {
         const list = document.getElementById('calModalEventList'); list.innerHTML = '';
@@ -1426,7 +1439,7 @@
         dayEvents.forEach(e => { 
             const tKey = e.timeType === 'am' ? 'timeAM' : (e.timeType === 'pm' ? 'timePM' : 'timeAll'); 
             const tLabel = UI_DICT[selectedLang][tKey] || UI_DICT[selectedLang].timeAll; 
-            list.innerHTML += `<div class="cal-modal-item"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="translateEvent('${e.id}')" style="color:#0284c7; border-color:#bae6fd;">${UI_DICT[selectedLang].btnTrans||"번역"}</button><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].btnEdit||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`; 
+            list.innerHTML += `<div class="cal-modal-item" style="border-left: 4px solid ${e.color || '#ef4444'};"><span><strong>[${tLabel}]</strong> ${e.text} (${e.user})</span><div><button onclick="translateEvent('${e.id}')" style="color:#0284c7; border-color:#bae6fd;">${UI_DICT[selectedLang].btnTrans||"번역"}</button><button onclick="openEditEventModal('${e.id}')">${UI_DICT[selectedLang].btnEdit||"수정"}</button><button onclick="deleteEvent('${e.id}')" style="color:#ef4444;">${UI_DICT[selectedLang].del||"삭제"}</button></div></div>`; 
         });
     }
 
@@ -1449,7 +1462,8 @@
     async function addNewEvent() {
         const text = document.getElementById('newCalEventInput').value.trim(); if(!text) return alert(UI_DICT[selectedLang].alertEvtInput);
         const tType = document.getElementById('newCalTimeSelect').value;
-        const newEvt = { id: 'evt_' + Date.now(), date: calSelectedDate, text: text, user: currentUser, timeType: tType };
+        const color = document.getElementById('newCalColor').value;
+        const newEvt = { id: 'evt_' + Date.now(), date: calSelectedDate, text: text, user: currentUser, timeType: tType, color: color };
         events.push(newEvt);
         fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: newEvt }) }).catch(e=>{});
         document.getElementById('newCalEventInput').value = ''; renderCalModalEvents(); renderCalendar();
@@ -1463,11 +1477,18 @@
     }
     function openEditEventModal(id) {
         const evt = events.find(e => e.id === id); if(!evt) return;
-        editCalId = id; document.getElementById('editCalText').value = evt.text; document.getElementById('editCalTime').value = evt.timeType || 'all'; document.getElementById('editCalModalOverlay').style.display = 'flex';
+        editCalId = id; 
+        document.getElementById('editCalText').value = evt.text; 
+        document.getElementById('editCalTime').value = evt.timeType || 'all'; 
+        document.getElementById('editCalColor').value = evt.color || '#0284c7';
+        document.getElementById('editCalModalOverlay').style.display = 'flex';
     }
     function submitEditEvent() {
         const evt = events.find(e => e.id === editCalId); if(!evt) return;
-        evt.text = document.getElementById('editCalText').value.trim(); evt.timeType = document.getElementById('editCalTime').value; document.getElementById('editCalModalOverlay').style.display = 'none';
+        evt.text = document.getElementById('editCalText').value.trim(); 
+        evt.timeType = document.getElementById('editCalTime').value; 
+        evt.color = document.getElementById('editCalColor').value;
+        document.getElementById('editCalModalOverlay').style.display = 'none';
         fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'saveEvent', data: evt }) }).catch(e=>{});
         renderCalModalEvents(); renderCalendar();
     }
