@@ -1266,21 +1266,23 @@
 
     function cancelReply() { replyTarget = null; document.getElementById('replyPreviewBox').style.display = 'none'; }
 
-    document.getElementById('chatInput').addEventListener('keydown', e => { 
-        // 접속 기기가 모바일인지 확인 (User-Agent 및 화면 너비 기준)
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+document.getElementById('chatInput').addEventListener('keydown', e => { 
+    // 1. Enter키를 눌렀고, Shift나 Alt를 누르지 않았을 때
+    if(e.key === 'Enter' && !e.shiftKey && !e.altKey && !e.isComposing) { 
         
-        if(e.key==='Enter' && !e.shiftKey && !e.altKey && !e.isComposing) { 
-            if (isMobile) {
-                // 모바일 환경: 엔터 키의 기본 동작(줄바꿈)을 그대로 허용
-                return; 
-            } else {
-                // PC 환경: 엔터 시 줄바꿈을 막고(preventDefault) 메시지 전송
-                e.preventDefault(); 
-                sendChatMessage(); 
-            }
-        } 
-    });
+        // 2. 모바일 기기인지 강제 확인 (화면 너비 768px 이하만 모바일로 간주)
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+            // 모바일에서는 엔터를 치면 줄바꿈이 정상(이게 기본값입니다)
+            return; 
+        } else {
+            // PC에서는 무조건 엔터 = 전송 (줄바꿈 방지)
+            e.preventDefault(); 
+            sendChatMessage(); 
+        }
+    } 
+});
 
     let isSendingMessage = false;
 
