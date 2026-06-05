@@ -1215,6 +1215,20 @@
         renderChatUI(true); 
         if(fdb) fdb.ref('chats/' + mid).set(nm);
 
+        // ⭐️ 전달 시에도 알람이 갈 수 있도록 추가된 부분 ⭐️
+        const curRoom = chatRooms.find(r => r.id === targetRoomId);
+        const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
+        if (receivers.length > 0) {
+            let notifyText = txt;
+            if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
+            const membersStr = receivers.join(",");
+            fetch(NOTIFY_GAS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "user=" + encodeURIComponent(currentUser) + "&text=" + encodeURIComponent(membersStr + "##" + "[전달된 메시지] " + notifyText)
+            }).catch(err => {});
+        }
+
         if (currentRoomId !== targetRoomId) {
             openChatRoom(targetRoomId);
         }
@@ -1252,7 +1266,7 @@
 
     function cancelReply() { replyTarget = null; document.getElementById('replyPreviewBox').style.display = 'none'; }
 
-document.getElementById('chatInput').addEventListener('keydown', e => { 
+    document.getElementById('chatInput').addEventListener('keydown', e => { 
         // 접속 기기가 모바일인지 확인 (User-Agent 및 화면 너비 기준)
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
         
