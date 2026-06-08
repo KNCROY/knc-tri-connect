@@ -263,7 +263,8 @@
         <h3 id="ui_editRoomTitle" style="font-size: 1.1rem; color: var(--accent-color); margin-bottom: 15px; margin-top: 0;">방 수정</h3>
         <div style="display:flex; flex-direction:column; gap:10px;">
             <button id="ui_btnAddMember" class="btn-save" style="padding:12px; font-weight:bold; border-radius:8px;" onclick="openAddMemberModal()">팀원 추가</button>
-            <button id="ui_btnDoDeleteRoom" style="padding:12px; color:#ef4444; border:1px solid #ffccd0; background:#fff; font-weight:bold; border-radius:8px;" onclick="deleteCurrentRoom()">방 삭제</button>
+            <button id="ui_btnRemoveMember" style="padding:12px; font-weight:bold; border-radius:8px; border:1px solid var(--border-color); background:#fff; cursor:pointer;" onclick="openRemoveMemberModal()">팀원 삭제</button>
+            <button id="ui_btnDoDeleteRoom" style="padding:12px; color:#ef4444; border:1px solid #ffccd0; background:#fff; font-weight:bold; border-radius:8px; cursor:pointer;" onclick="deleteCurrentRoom()">방 삭제</button>
             <button id="ui_editRoomClose" style="padding:12px; background:#f5f5f7; border:none; border-radius:8px; cursor:pointer;" onclick="document.getElementById('editRoomModalOverlay').style.display='none'">닫기</button>
         </div>
     </div>
@@ -276,6 +277,17 @@
         <div class="trans-modal-btns">
             <button class="btn-save" id="ui_btnSubmitAddMember" onclick="submitAddMember()">추가</button>
             <button onclick="document.getElementById('addMemberModalOverlay').style.display='none'">취소</button>
+        </div>
+    </div>
+</div>
+
+<div id="removeMemberModalOverlay" class="trans-modal-overlay">
+    <div class="trans-modal" style="max-width: 380px;">
+        <h3 id="ui_removeMemberTitle">팀원 삭제</h3>
+        <div id="removeMemberGrid" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
+        <div class="trans-modal-btns">
+            <button class="btn-save" id="ui_btnSubmitRemoveMember" style="background:#ef4444; border-color:#ef4444;" onclick="submitRemoveMember()">삭제</button>
+            <button onclick="document.getElementById('removeMemberModalOverlay').style.display='none'">취소</button>
         </div>
     </div>
 </div>
@@ -468,6 +480,7 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "MsChoi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
+    // ⭐️ 수정됨: 팀원 삭제 다국어 번역 텍스트 추가
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", btnEdit: "수정", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -478,7 +491,7 @@
             memoPH: "현장 업무 내용을 상세히 기록하세요... (이미지 복사 붙여넣기 가능)",
             btnPush: "🔔 알림 켜기/초기화", pushSuccess: "✅ [성공] 서버에 알림 주소가 완벽히 갱신(초기화) 되었습니다!", pushFailConn: "❌ [연결 실패] ", pushFailToken: "❌ [토큰 실패] ", pushAllow: "알림 권한을 허용해 주셔야 합니다.",
             chatSearchPH: "채팅 내용 검색...", memoTitlePH: "제목을 입력하세요 (미입력 시 날짜가 제목이 됩니다)", btnSearchChat: "검색",
-            btnEditRoom: "방수정", btnAddMember: "팀원 추가", editRoomTitle: "방 수정", retryTrans: "재시도", transFail: "⚠️ 번역 실패 (재시도 🔄)",
+            btnEditRoom: "방수정", btnAddMember: "팀원 추가", btnRemoveMember: "팀원 삭제", editRoomTitle: "방 수정", removeMemberTitle: "팀원 삭제", retryTrans: "재시도", transFail: "⚠️ 번역 실패 (재시도 🔄)",
             forwardMsg: "메시지 전달", forwardTitle: "방 선택하여 전달", btnForward: "전달", btnTrans: "번역",
             btnEmojiTxt: "이모티콘", btnPhotoTxt: "사진", btnFileTxt: "파일"
         },
@@ -491,7 +504,7 @@
             memoPH: "Vui lòng ghi lại chi tiết công việc hiện trường... (Có thể sao chép và dán hình ảnh)",
             btnPush: "🔔 Bật/Đặt lại TB", pushSuccess: "✅ [Thành công] Đã đăng ký nhận thông báo!", pushFailConn: "❌ [Lỗi kết nối] ", pushFailToken: "❌ [Lỗi Token] ", pushAllow: "Vui lòng cho phép quyền thông báo.",
             chatSearchPH: "Tìm kiếm tin nhắn...", memoTitlePH: "Nhập tiêu đề (nếu trống sẽ dùng ngày làm tiêu đề)", btnSearchChat: "Tìm",
-            btnEditRoom: "Sửa phòng", btnAddMember: "Thêm T.Viên", editRoomTitle: "Sửa phòng", retryTrans: "Thử lại", transFail: "⚠️ Lỗi dịch (Thử lại 🔄)",
+            btnEditRoom: "Sửa phòng", btnAddMember: "Thêm T.Viên", btnRemoveMember: "Xóa T.Viên", editRoomTitle: "Sửa phòng", removeMemberTitle: "Xóa T.Viên", retryTrans: "Thử lại", transFail: "⚠️ Lỗi dịch (Thử lại 🔄)",
             forwardMsg: "Chuyển tiếp", forwardTitle: "Chọn phòng để chuyển", btnForward: "Chuyển", btnTrans: "Dịch",
             btnEmojiTxt: "Biểu tượng", btnPhotoTxt: "Ảnh", btnFileTxt: "Tập tin"
         },
@@ -504,7 +517,7 @@
             memoPH: "Please record the field work details... (Image copy & paste available)",
             btnPush: "🔔 Enable/Reset Push", pushSuccess: "✅ [Success] Push notification registered!", pushFailConn: "❌ [Connection Error] ", pushFailToken: "❌ [Token Error] ", pushAllow: "Please allow notification permissions.",
             chatSearchPH: "Search messages...", memoTitlePH: "Enter title (leaves empty to use date as title)", btnSearchChat: "Search",
-            btnEditRoom: "Edit", btnAddMember: "Add Member", editRoomTitle: "Edit Room", retryTrans: "Retry", transFail: "⚠️ Trans Fail (Retry 🔄)",
+            btnEditRoom: "Edit", btnAddMember: "Add Member", btnRemoveMember: "Remove Member", editRoomTitle: "Edit Room", removeMemberTitle: "Remove Member", retryTrans: "Retry", transFail: "⚠️ Trans Fail (Retry 🔄)",
             forwardMsg: "Forward Message", forwardTitle: "Select room to forward", btnForward: "Forward", btnTrans: "Trans",
             btnEmojiTxt: "Emoji", btnPhotoTxt: "Photo", btnFileTxt: "File"
         }
@@ -859,6 +872,11 @@
         if(document.getElementById('ui_forwardTitle')) document.getElementById('ui_forwardTitle').innerText = d.forwardTitle;
         if(document.getElementById('ui_btnSubmitForward')) document.getElementById('ui_btnSubmitForward').innerText = d.btnForward;
 
+        // ⭐️ 추가됨: 팀원 삭제 다국어 적용
+        if(document.getElementById('ui_btnRemoveMember')) document.getElementById('ui_btnRemoveMember').innerText = d.btnRemoveMember;
+        if(document.getElementById('ui_removeMemberTitle')) document.getElementById('ui_removeMemberTitle').innerText = d.removeMemberTitle;
+        if(document.getElementById('ui_btnSubmitRemoveMember')) document.getElementById('ui_btnSubmitRemoveMember').innerText = d.del;
+
         if(appMode === 'calendar') renderCalendar();
         if(appMode === 'chat') renderChatUI(false);
         renderTranslationButtons();
@@ -1122,6 +1140,70 @@
         document.getElementById('addMemberModalOverlay').style.display = 'none';
     }
 
+    // ⭐️ 추가됨: 팀원 삭제 기능 
+    function openRemoveMemberModal() {
+        document.getElementById('editRoomModalOverlay').style.display = 'none';
+        const curRoom = chatRooms.find(r => r.id === currentRoomId);
+        if (!curRoom) return;
+        
+        selectedInvitees = []; 
+        const grid = document.getElementById('removeMemberGrid'); 
+        grid.innerHTML = ''; 
+        let canRemove = false;
+        
+        curRoom.members.forEach(u => { 
+            if(u !== currentUser) { 
+                canRemove = true;
+                const btn = document.createElement('button'); 
+                btn.className = 'invite-user-btn'; 
+                btn.innerText = u; 
+                btn.onclick = () => { 
+                    if(selectedInvitees.includes(u)) { 
+                        selectedInvitees = selectedInvitees.filter(id => id !== u); 
+                        btn.classList.remove('selected'); 
+                        btn.style.backgroundColor = '';
+                        btn.style.color = '';
+                        btn.style.borderColor = '';
+                    } else { 
+                        selectedInvitees.push(u); 
+                        btn.classList.add('selected'); 
+                        btn.style.backgroundColor = '#ef4444';
+                        btn.style.color = '#fff';
+                        btn.style.borderColor = '#ef4444';
+                    } 
+                }; 
+                grid.appendChild(btn); 
+            } 
+        }); 
+        
+        if (!canRemove) {
+            grid.innerHTML = '<div style="font-size:0.9rem; color:#888; text-align:center; width:100%;">삭제할 수 있는 팀원이 없습니다.</div>';
+        }
+        
+        document.getElementById('removeMemberModalOverlay').style.display = 'flex';
+    }
+
+    // ⭐️ 추가됨: 팀원 삭제 기능 
+    function submitRemoveMember() {
+        if (selectedInvitees.length === 0) {
+            document.getElementById('removeMemberModalOverlay').style.display = 'none';
+            return;
+        }
+        const targetRoomId = currentRoomId;
+        const roomIdx = chatRooms.findIndex(r => r.id === targetRoomId);
+        if (roomIdx > -1) {
+            const nr = chatRooms[roomIdx];
+            nr.members = nr.members.filter(m => !selectedInvitees.includes(m)); 
+            chatRooms[roomIdx] = nr;
+            
+            localStorage.setItem('knc_rooms_v13', JSON.stringify(chatRooms));
+            if (fdb) fdb.ref('rooms/' + targetRoomId).set(nr);
+            
+            initChatRooms(); renderOnlineStatus(); renderChatUI(true);
+        }
+        document.getElementById('removeMemberModalOverlay').style.display = 'none';
+    }
+
     function openCreateRoomModal() { document.getElementById('newRoomNameInput').value = ''; selectedInvitees = []; const grid = document.getElementById('inviteUserGrid'); grid.innerHTML = ''; allUsers.forEach(u => { if(u !== currentUser) { const btn = document.createElement('button'); btn.className = 'invite-user-btn'; btn.innerText = u; btn.onclick = () => { if(selectedInvitees.includes(u)) { selectedInvitees = selectedInvitees.filter(id => id !== u); btn.classList.remove('selected'); } else { selectedInvitees.push(u); btn.classList.add('selected'); } }; grid.appendChild(btn); } }); document.getElementById('createRoomModalOverlay').style.display = 'flex'; }
     function closeCreateRoomModal() { document.getElementById('createRoomModalOverlay').style.display = 'none'; }
     function submitCreateRoom() {
@@ -1215,7 +1297,6 @@
         renderChatUI(true); 
         if(fdb) fdb.ref('chats/' + mid).set(nm);
 
-        // ⭐️ 전달 시에도 알람이 갈 수 있도록 추가된 부분 ⭐️
         const curRoom = chatRooms.find(r => r.id === targetRoomId);
         const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
         if (receivers.length > 0) {
@@ -1266,23 +1347,22 @@
 
     function cancelReply() { replyTarget = null; document.getElementById('replyPreviewBox').style.display = 'none'; }
 
+// ⭐️ 수정됨: PC 및 모바일 엔터키 호환성 최종 대응 로직
 document.getElementById('chatInput').addEventListener('keydown', e => { 
-    // 1. Enter키 입력 확인 (입력 중인 한글 조합 상태 제외)
     if(e.key === 'Enter' && !e.isComposing) { 
-        
-        // 2. 모바일 기기인지 확인 (화면 너비 768px 이하)
-        const isMobile = window.innerWidth <= 768;
+        // User-Agent를 통해 모바일 기기인지 판별합니다 (창 크기 768px 조건 삭제)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         if (isMobile) {
-            // 모바일: 엔터는 줄바꿈이 기본이므로 그대로 유지
+            // 진짜 모바일인 경우 줄바꿈 기본 동작 허용
             return; 
         } else {
-            // PC 환경:
-            if (e.altKey) {
-                // Alt + Enter 조합 시: 줄바꿈 허용 (기본 동작 유지)
+            // PC인 경우
+            if (e.shiftKey || e.altKey) {
+                // Shift+Enter 나 Alt+Enter 는 줄바꿈 허용
                 return;
             } else {
-                // 그냥 Enter 시: 메시지 전송
+                // 그냥 Enter 만 쳤을 때 전송
                 e.preventDefault(); 
                 sendChatMessage(); 
             }
