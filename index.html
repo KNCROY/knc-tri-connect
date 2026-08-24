@@ -346,7 +346,7 @@
     </div>
 </div>
 
-<div id="lightboxOverlay" onclick="this.style.display='none'"><img id="lightboxImg" src=""><div class="lightbox-hint">터치하면 닫힙니다</div></div>
+<div id="lightboxOverlay" onclick="closeLightbox()"><img id="lightboxImg" src=""><div class="lightbox-hint">터치하면 닫힙니다 (휠로 확대/축소)</div></div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="sidebar" id="sidebar">
@@ -440,8 +440,8 @@
                             <textarea id="chatInput" class="chat-ta" placeholder="엔터:전송 / Shift+엔터:줄바꿈 (이미지 복사 붙여넣기 가능)"></textarea>
                             <button class="btn-send" id="ui_btnSend" onclick="sendChatMessage()">전송</button>
                         </div>
-                        <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" onchange="handleImageUpload(event, 'chat')">
-                        <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="handleChatMedia(event, 'file')">
+                        <input type="file" id="chatPhotoInput" accept="image/*" multiple style="display:none" onchange="handleImageUpload(event, 'chat')">
+                        <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt" multiple style="display:none" onchange="handleChatMedia(event, 'file')">
                     </div>
                 </div>
                 <div class="member-sidebar" id="memberSidebar"><div class="member-sidebar-title" id="ui_memberSidebarTitle">접속 상태 & 1:1 채팅</div><div id="onlineStatusBox"></div></div>
@@ -480,7 +480,6 @@
     const GROUPS = { ko: ["Allen", "Roy", "Max", "MsChoi"], vi: ["Dung A", "Loan", "Vuong", "Dung B", "Thanh", "Luong"], en: ["User"] };
     const LANG_NAMES = { "ko": "KR", "vi": "VN", "en": "EN" };
     
-    // ⭐️ 수정됨: 팀원 삭제 다국어 번역 텍스트 추가
     const UI_DICT = {
         ko: { 
             list: "목록 열기", new: "새 기록", save: "저장", del: "삭제", btnEdit: "수정", navMemo: "개인수첩(번역)", navChat: "메신저", navCal: "달력", titleMemo: "개인수첩(번역)", titleChat: "KNC Messenger", titleCal: "KNC Calendar", photo: "사진 첨부", btnCopy: "복사", btnClose: "닫기", newDisplay: "새 업무 기록 작성 중...", btnMem: "팀원", btnCloseMem: "목록 닫기", chatPH: "엔터:전송 / Shift+엔터:줄바꿈", btnSend: "전송", btnCreateRoom: "방생성(+)", timeAll: "종일", timeAM: "오전", timePM: "오후",
@@ -862,6 +861,7 @@
 
         document.getElementById('btnEditRoom').innerText = d.btnEditRoom;
         document.getElementById('ui_btnAddMember').innerText = d.btnAddMember;
+        document.getElementById('ui_btnRemoveMember').innerText = d.btnRemoveMember;
         document.getElementById('ui_editRoomTitle').innerText = d.editRoomTitle;
         document.getElementById('ui_btnDoDeleteRoom').innerText = d.deleteRoom;
         document.getElementById('ui_addMemberTitle').innerText = d.btnAddMember;
@@ -872,8 +872,6 @@
         if(document.getElementById('ui_forwardTitle')) document.getElementById('ui_forwardTitle').innerText = d.forwardTitle;
         if(document.getElementById('ui_btnSubmitForward')) document.getElementById('ui_btnSubmitForward').innerText = d.btnForward;
 
-        // ⭐️ 추가됨: 팀원 삭제 다국어 적용
-        if(document.getElementById('ui_btnRemoveMember')) document.getElementById('ui_btnRemoveMember').innerText = d.btnRemoveMember;
         if(document.getElementById('ui_removeMemberTitle')) document.getElementById('ui_removeMemberTitle').innerText = d.removeMemberTitle;
         if(document.getElementById('ui_btnSubmitRemoveMember')) document.getElementById('ui_btnSubmitRemoveMember').innerText = d.del;
 
@@ -891,14 +889,54 @@
             img.onload = () => {
                 const cvs = document.createElement('canvas');
                 let w = img.width, h = img.height;
-                if (w > 640) { h *= 640 / w; w = 640; }
+                // 1280px 기준으로 해상도 개선
+                if (w > 1280) { h *= 1280 / w; w = 1280; }
                 cvs.width = w; cvs.height = h;
                 cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                callback(cvs.toDataURL('image/jpeg', 0.5));
+                // 압축률을 0.85로 높여 가독성 향상
+                callback(cvs.toDataURL('image/jpeg', 0.85));
             };
             img.src = ev.target.result;
         };
         r.readAsDataURL(fileOrBlob);
+    }
+
+    /* 📝 개인수첩 로직 */
+    let curMemId = null; let currentMemoImages = [];
+    
+    // 다중 파일 전송을 위한 배열 변수
+    let curChatMediaList = [];
+
+    function handleImageUpload(e, targetType) { 
+        const files = Array.from(e.target.files);
+        if(!files.length) return;
+        files.forEach(f => {
+            // 10MB 용량 제한
+            if (f.size > 10 * 1024 * 1024) return alert("10MB 이하의 파일만 첨부 가능합니다.");
+            processAndCompressImage(f, base64 => {
+                if(targetType === 'memo') { currentMemoImages.push(base64); renderGallery(); }
+                else if (targetType === 'chat') { 
+                    curChatMediaList.push({ type: 'image', data: base64 }); 
+                    showChatMediaPreview(); 
+                }
+            });
+        });
+        e.target.value = ''; 
+    }
+
+    function handleChatMedia(e, type) {
+        const files = Array.from(e.target.files); 
+        if(!files.length) return;
+        files.forEach(f => {
+            if (f.size > 10 * 1024 * 1024) return alert("10MB 이하의 파일만 첨부 가능합니다.");
+            const r = new FileReader(); 
+            r.onload = ev => { 
+                curChatMediaList.push({ type: 'file', data: ev.target.result, name: f.name }); 
+                showChatMediaPreview(); 
+            }; 
+            r.readAsDataURL(f); 
+        });
+        e.target.value = '';
     }
 
     function handlePasteEvent(e, targetType) {
@@ -909,7 +947,10 @@
                 const blob = item.getAsFile();
                 processAndCompressImage(blob, base64 => {
                     if (targetType === 'memo') { currentMemoImages.push(base64); renderGallery(); } 
-                    else if (targetType === 'chat') { curChatMedia = { type: 'image', data: base64 }; showChatMediaPreview(); }
+                    else if (targetType === 'chat') { 
+                        curChatMediaList.push({ type: 'image', data: base64 }); 
+                        showChatMediaPreview(); 
+                    }
                 });
                 break; 
             }
@@ -918,20 +959,32 @@
     document.getElementById('mainText').addEventListener('paste', e => handlePasteEvent(e, 'memo'));
     document.getElementById('chatInput').addEventListener('paste', e => handlePasteEvent(e, 'chat'));
 
-    /* 📝 개인수첩 로직 */
-    let curMemId = null; let currentMemoImages = [];
-    function handleImageUpload(e, targetType) { 
-        const files = Array.from(e.target.files);
-        if(!files.length) return;
-        files.forEach(f => {
-            if (f.size > 5 * 1024 * 1024) return alert(UI_DICT[selectedLang].alertBigFile);
-            processAndCompressImage(f, base64 => {
-                if(targetType === 'memo') { currentMemoImages.push(base64); renderGallery(); }
-                else if (targetType === 'chat') { curChatMedia = { type: 'image', data: base64 }; showChatMediaPreview(); }
-            });
+    function showChatMediaPreview() {
+        const box = document.getElementById('chatPreviewBox');
+        box.innerHTML = '';
+        if (curChatMediaList.length === 0) {
+            box.style.display = 'none';
+            return;
+        }
+        
+        box.style.display = 'flex';
+        box.style.flexWrap = 'wrap';
+        box.style.gap = '8px';
+
+        curChatMediaList.forEach((media, idx) => {
+            if(media.type === 'image') { 
+                box.innerHTML += `<div class="chat-preview-item"><button class="btn-remove-media" onclick="removeChatMedia(${idx})">✖</button><img src="${media.data}"></div>`; 
+            } else { 
+                box.innerHTML += `<div class="chat-preview-item"><button class="btn-remove-media" onclick="removeChatMedia(${idx})">✖</button><div class="chat-preview-file">📎 ${media.name}</div></div>`; 
+            }
         });
-        e.target.value = ''; 
     }
+
+    function removeChatMedia(idx) {
+        curChatMediaList.splice(idx, 1);
+        showChatMediaPreview();
+    }
+
     function renderGallery() { const g = document.getElementById('photoGallery'); g.innerHTML = ''; currentMemoImages.forEach((s, i) => { g.innerHTML += `<div class="gallery-item"><button class="btn-remove-photo" onclick="currentMemoImages.splice(${i},1);renderGallery()">✖</button><img src="${s}" onclick="openLightbox(this.src)"></div>`; }); }
     
     function startNewMemo() { 
@@ -1004,8 +1057,26 @@
     }
     
     function toggleSidebar() { const s = document.getElementById('sidebar'); s.classList.toggle('open'); document.getElementById('sidebarOverlay').style.display = s.classList.contains('open') ? 'block' : 'none'; }
-    function openLightbox(s) { document.getElementById('lightboxImg').src = s; document.getElementById('lightboxOverlay').style.display = 'flex'; }
+    
+    // 라이트박스 줌 기능 변수 및 이벤트
+    let currentZoom = 1;
+    function openLightbox(s) { 
+        currentZoom = 1;
+        const img = document.getElementById('lightboxImg');
+        img.src = s; 
+        img.style.transform = `scale(${currentZoom})`;
+        img.style.transition = 'transform 0.2s ease';
+        document.getElementById('lightboxOverlay').style.display = 'flex'; 
+    }
     function closeLightbox() { document.getElementById('lightboxOverlay').style.display = 'none'; }
+    
+    document.getElementById('lightboxOverlay').addEventListener('wheel', (e) => {
+        e.preventDefault();
+        currentZoom += e.deltaY * -0.002;
+        currentZoom = Math.min(Math.max(1, currentZoom), 4);
+        document.getElementById('lightboxImg').style.transform = `scale(${currentZoom})`;
+    });
+
     function closeTransModal() { document.getElementById('transModalOverlay').style.display = 'none'; }
     function copyTranslation() { const t = document.getElementById('transResultText'); t.select(); document.execCommand('copy'); alert(UI_DICT[selectedLang].alertCopy); }
     function renderTranslationButtons() {
@@ -1020,8 +1091,6 @@
     }
 
     /* 💬 메신저 로직 */
-    let curChatMedia = null; 
-    
     function toggleAttachPanel() { 
         const p = document.getElementById('attachPanel'); 
         p.style.display = p.style.display === 'flex' ? 'none' : 'flex'; 
@@ -1140,7 +1209,6 @@
         document.getElementById('addMemberModalOverlay').style.display = 'none';
     }
 
-    // ⭐️ 추가됨: 팀원 삭제 기능 
     function openRemoveMemberModal() {
         document.getElementById('editRoomModalOverlay').style.display = 'none';
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
@@ -1183,7 +1251,6 @@
         document.getElementById('removeMemberModalOverlay').style.display = 'flex';
     }
 
-    // ⭐️ 추가됨: 팀원 삭제 기능 
     function submitRemoveMember() {
         if (selectedInvitees.length === 0) {
             document.getElementById('removeMemberModalOverlay').style.display = 'none';
@@ -1214,28 +1281,12 @@
         closeCreateRoomModal(); initChatRooms(); renderOnlineStatus(); renderChatUI(true);
     }
 
-    function handleChatMedia(e, type) {
-        const f = e.target.files[0]; if(!f) return;
-        if (f.size > 2 * 1024 * 1024) return alert(UI_DICT[selectedLang].alert2MB);
-        const r = new FileReader(); r.onload = ev => { 
-            curChatMedia = { type: 'file', data: ev.target.result, name: f.name }; showChatMediaPreview(); 
-        }; r.readAsDataURL(f); e.target.value = '';
-    }
-
-    function showChatMediaPreview() {
-        const box = document.getElementById('chatPreviewBox');
-        if(curChatMedia.type === 'image') { 
-            box.innerHTML = `<div class="chat-preview-item"><button class="btn-remove-media" onclick="curChatMedia=null; document.getElementById('chatPreviewBox').style.display='none'">✖</button><img src="${curChatMedia.data}"></div>`; 
-        } 
-        else { 
-            box.innerHTML = `<div class="chat-preview-item"><button class="btn-remove-media" onclick="curChatMedia=null; document.getElementById('chatPreviewBox').style.display='none'">✖</button><div class="chat-preview-file">📎 ${curChatMedia.name}</div></div>`; 
-        }
-        box.style.display = 'flex';
-    }
-
     function insertEmoji(emoji) { const ta = document.getElementById('chatInput'); ta.value += emoji; ta.focus(); }
 
     function openMsgAction(id) {
+        // 텍스트가 선택된 상태(드래그 중)라면 팝업을 띄우지 않고 종료합니다.
+        if (window.getSelection().toString().trim().length > 0) return;
+
         const targetMsg = chatHistory.find(m => m.id === id);
         if (!targetMsg) return;
         
@@ -1347,28 +1398,21 @@
 
     function cancelReply() { replyTarget = null; document.getElementById('replyPreviewBox').style.display = 'none'; }
 
-// ⭐️ 수정됨: PC 및 모바일 엔터키 호환성 최종 대응 로직
-document.getElementById('chatInput').addEventListener('keydown', e => { 
-    if(e.key === 'Enter' && !e.isComposing) { 
-        // User-Agent를 통해 모바일 기기인지 판별합니다 (창 크기 768px 조건 삭제)
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        if (isMobile) {
-            // 진짜 모바일인 경우 줄바꿈 기본 동작 허용
-            return; 
-        } else {
-            // PC인 경우
-            if (e.shiftKey || e.altKey) {
-                // Shift+Enter 나 Alt+Enter 는 줄바꿈 허용
-                return;
+    document.getElementById('chatInput').addEventListener('keydown', e => { 
+        if(e.key === 'Enter' && !e.isComposing) { 
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                return; 
             } else {
-                // 그냥 Enter 만 쳤을 때 전송
-                e.preventDefault(); 
-                sendChatMessage(); 
+                if (e.shiftKey || e.altKey) {
+                    return;
+                } else {
+                    e.preventDefault(); 
+                    sendChatMessage(); 
+                }
             }
-        }
-    } 
-});
+        } 
+    });
 
     let isSendingMessage = false;
 
@@ -1402,29 +1446,41 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
         if (isSendingMessage) return; 
         
         const txt = document.getElementById('chatInput').value.trim(); 
-        if (!txt && !curChatMedia) return;
+        if (!txt && curChatMediaList.length === 0) return;
         
         isSendingMessage = true; 
         setTimeout(() => { isSendingMessage = false; }, 800); 
 
-        const mid = Date.now().toString();
-        const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: txt, media: curChatMedia, replyTo: replyTarget, ko: selectedLang==='ko'?txt:"", vi: selectedLang==='vi'?txt:"", en: selectedLang==='en'?txt:"", status: txt ? 'loading' : 'done', readBy: [currentUser] };
-        
-        chatHistory.push(nm); 
-        document.getElementById('chatInput').value = ""; curChatMedia = null; 
+        if (txt) {
+            await sendSingleMsgData(txt, null);
+        }
+
+        if (curChatMediaList.length > 0) {
+            for (let media of curChatMediaList) {
+                await sendSingleMsgData("", media);
+            }
+        }
+
+        document.getElementById('chatInput').value = ""; 
+        curChatMediaList = []; 
         document.getElementById('chatPreviewBox').style.display='none'; 
         document.getElementById('emojiPanel').style.display='none'; 
         document.getElementById('attachPanel').style.display='none';
         cancelReply(); 
         renderChatUI(true); 
+    }
 
+    async function sendSingleMsgData(text, mediaObj) {
+        const mid = Date.now().toString() + Math.floor(Math.random() * 1000);
+        const nm = { id: mid, roomId: currentRoomId, sender: currentUser, lang: selectedLang, original: text, media: mediaObj, replyTo: (text ? replyTarget : null), ko: selectedLang==='ko'?text:"", vi: selectedLang==='vi'?text:"", en: selectedLang==='en'?text:"", status: text ? 'loading' : 'done', readBy: [currentUser] };
+        
+        chatHistory.push(nm); 
         if(fdb) fdb.ref('chats/' + mid).set(nm);
 
-        let notifyText = txt;
-        if (!txt && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
+        let notifyText = text;
+        if (!text && nm.media) notifyText = (nm.media.type === 'image') ? "(사진 첨부)" : "(파일 첨부)";
         
         const curRoom = chatRooms.find(r => r.id === currentRoomId);
-        
         const receivers = curRoom ? curRoom.members.filter(m => m !== currentUser) : [];
         if (receivers.length > 0) {
             const membersStr = receivers.join(",");
@@ -1435,17 +1491,15 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
             }).catch(err => {});
         }
         
-        if (txt) {
+        if (text) {
             const targets = ['ko', 'vi', 'en'].filter(l => l !== selectedLang);
             try {
-                const res1 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[0]}`); const data1 = await res1.json();
-                const res2 = await fetch(`${GAS_URL}?text=${encodeURIComponent(txt)}&target=${targets[1]}`); const data2 = await res2.json();
-                
+                const res1 = await fetch(`${GAS_URL}?text=${encodeURIComponent(text)}&target=${targets[0]}`); const data1 = await res1.json();
+                const res2 = await fetch(`${GAS_URL}?text=${encodeURIComponent(text)}&target=${targets[1]}`); const data2 = await res2.json();
                 nm[targets[0]] = data1.translatedText; nm[targets[1]] = data2.translatedText; nm.status = 'done';
                 
                 renderChatUI(false); 
                 if(fdb) fdb.ref('chats/' + mid).set(nm); 
-
             } catch (e) { 
                 nm.status = 'error'; 
                 renderChatUI(false); 
@@ -1486,7 +1540,7 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
             if(!m.readBy) m.readBy = [m.sender]; 
             if(!m.readBy.includes(currentUser)) { m.readBy.push(currentUser); needReadSync = true; lastUnreadMsg = m; }
             
-            const mDate = new Date(parseInt(m.id));
+            const mDate = new Date(parseInt(m.id.slice(0, 13)));
             const y = mDate.getFullYear(), mon = mDate.getMonth() + 1, d = mDate.getDate();
             const dayNames = UI_DICT[selectedLang].days;
             const dayStr = dayNames[mDate.getDay()];
