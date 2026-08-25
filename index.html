@@ -198,9 +198,14 @@
         .cal-modal-item button { padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: 1px solid var(--border-color); background: #fff; cursor: pointer;}
         .invite-user-btn { padding: 8px; font-size: 0.85rem; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; flex: 1 1 calc(33% - 10px);}
         .invite-user-btn.selected { background: var(--accent-color); color: #fff; border-color: var(--accent-color);}
+        
+        /* 📸 확대/축소 라이트박스 및 툴바 CSS */
         #lightboxOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; flex-direction: column; }
-        #lightboxOverlay img { max-width: 95%; max-height: 90%; object-fit: contain; border-radius: 8px; }
-        .lightbox-hint { color: #fff; margin-top: 15px; font-size: 0.9rem; }
+        #lightboxImg { max-width: 95%; max-height: 80%; object-fit: contain; border-radius: 8px; transition: transform 0.2s ease; cursor: default; }
+        .lightbox-hint { color: #fff; margin-top: 15px; font-size: 0.9rem; z-index: 1010; }
+        .lightbox-toolbar { position: absolute; top: 20px; display: flex; gap: 8px; z-index: 1010; }
+        .lightbox-toolbar button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.2s; }
+        .lightbox-toolbar button:hover { background: rgba(255,255,255,0.4); }
 
         /* 📱 반응형 (모바일) 완벽 설정 */
         @media (max-width: 768px) {
@@ -346,7 +351,16 @@
     </div>
 </div>
 
-<div id="lightboxOverlay" onclick="closeLightbox()"><img id="lightboxImg" src=""><div class="lightbox-hint">터치하면 닫힙니다 (휠로 확대/축소)</div></div>
+<div id="lightboxOverlay" onclick="closeLightbox()">
+    <div class="lightbox-toolbar" onclick="event.stopPropagation()">
+        <button onclick="zoomLightbox(0.5)">확대 (+)</button>
+        <button onclick="zoomLightbox(-0.5)">축소 (-)</button>
+        <button onclick="saveLightboxImage()">저장</button>
+        <button onclick="closeLightbox()">닫기</button>
+    </div>
+    <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+    <div class="lightbox-hint">배경을 터치하면 닫힙니다 (휠 또는 상단 버튼으로 확대/축소)</div>
+</div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="sidebar" id="sidebar">
@@ -889,12 +903,12 @@
             img.onload = () => {
                 const cvs = document.createElement('canvas');
                 let w = img.width, h = img.height;
-                // 1280px 기준으로 해상도 개선
-                if (w > 1280) { h *= 1280 / w; w = 1280; }
+                // 해상도 1920px (Full HD) 기준으로 대폭 상향
+                if (w > 1920) { h *= 1920 / w; w = 1920; }
                 cvs.width = w; cvs.height = h;
                 cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                // 압축률을 0.85로 높여 가독성 향상
-                callback(cvs.toDataURL('image/jpeg', 0.85));
+                // 압축률을 0.95로 상향하여 스크린샷 텍스트 가독성 개선
+                callback(cvs.toDataURL('image/jpeg', 0.95));
             };
             img.src = ev.target.result;
         };
@@ -1058,17 +1072,37 @@
     
     function toggleSidebar() { const s = document.getElementById('sidebar'); s.classList.toggle('open'); document.getElementById('sidebarOverlay').style.display = s.classList.contains('open') ? 'block' : 'none'; }
     
-    // 라이트박스 줌 기능 변수 및 이벤트
+    // 라이트박스 줌 및 버튼 기능
     let currentZoom = 1;
     function openLightbox(s) { 
         currentZoom = 1;
         const img = document.getElementById('lightboxImg');
         img.src = s; 
         img.style.transform = `scale(${currentZoom})`;
-        img.style.transition = 'transform 0.2s ease';
         document.getElementById('lightboxOverlay').style.display = 'flex'; 
     }
-    function closeLightbox() { document.getElementById('lightboxOverlay').style.display = 'none'; }
+    
+    function closeLightbox() { 
+        document.getElementById('lightboxOverlay').style.display = 'none'; 
+        currentZoom = 1;
+        document.getElementById('lightboxImg').style.transform = `scale(${currentZoom})`;
+    }
+    
+    function zoomLightbox(delta) {
+        currentZoom += delta;
+        currentZoom = Math.min(Math.max(1, currentZoom), 4);
+        document.getElementById('lightboxImg').style.transform = `scale(${currentZoom})`;
+    }
+    
+    function saveLightboxImage() {
+        const img = document.getElementById('lightboxImg');
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = 'KNC_Image_' + Date.now() + '.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
     
     document.getElementById('lightboxOverlay').addEventListener('wheel', (e) => {
         e.preventDefault();
