@@ -598,7 +598,7 @@
             const incomingChats = Object.values(data);
             
             const currentIds = new Set(chatHistory.map(c => c.id));
-            const newServerChats = incomingChats.filter(c => !currentIds.has(c.id)).sort((a, b) => a.id - b.id); 
+            const newServerChats = incomingChats.filter(c => !currentIds.has(c.id)).sort((a, b) => parseInt(a.id.slice(0, 13)) - parseInt(b.id.slice(0, 13))); 
             
             let shouldNotify = false;
             let notifyMsg = null;
@@ -638,7 +638,7 @@
                 }
             }
 
-            chatHistory = incomingChats.sort((a, b) => a.id - b.id);
+            chatHistory = incomingChats.sort((a, b) => parseInt(a.id.slice(0, 13)) - parseInt(b.id.slice(0, 13)));
             
             if (isInitialChatSync) {
                 let unreadRoomId = null;
